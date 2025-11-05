@@ -1,7 +1,19 @@
+using WindTurbine.DataAccess.Context; 
+using Microsoft.EntityFrameworkCore;
+using WindTurbine.Business.Abstract;
+using WindTurbine.Business.Concrete;
+using WindTurbine.DataAccess.Abstract;
+using WindTurbine.DataAccess.Repositories;
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddScoped<IAlertService, AlertManager>();
+builder.Services.AddScoped<IAlertRepository, EfAlertRepository>();
 // Add services to the container.
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
+
+builder.Services.AddDbContext<WindTurbineDbContext>(options =>
+    options.UseSqlServer(connectionString));
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
