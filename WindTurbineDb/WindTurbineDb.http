@@ -1,0 +1,6 @@
+@WindTurbineDb_HostAddress = http://localhost:5279
+
+GET {{WindTurbineDb_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
