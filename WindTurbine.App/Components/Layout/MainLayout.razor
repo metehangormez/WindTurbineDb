@@ -1,36 +1,45 @@
 ﻿@inherits LayoutComponentBase
 
-<MudThemeProvider />
+<MudThemeProvider Theme="_customTheme" />
 <MudDialogProvider />
 <MudSnackbarProvider />
 
 <MudLayout>
-    <MudAppBar Elevation="0" Color="Color.Transparent" Fixed="true" Class="px-4 mt-2">
-        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Primary" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+    <MudAppBar Elevation="1" Style="background-color: white; color: #424242;">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+        <MudText Typo="Typo.h6" Class="ml-3" Style="font-weight: 800; letter-spacing: 1px; color: #1a237e;">WIND MANAGER</MudText>
         <MudSpacer />
-        <MudIconButton Icon="@Icons.Material.Filled.Notifications" Color="Color.Default" />
-        <MudAvatar Color="Color.Primary" Class="ml-3">MK</MudAvatar>
+        <MudIconButton Icon="@Icons.Material.Filled.NotificationsNone" Color="Color.Inherit" />
+        <MudAvatar Color="Color.Primary" Size="Size.Small" Class="ml-3" Style="font-size: 0.8rem;">AD</MudAvatar>
     </MudAppBar>
 
-    <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="0" Variant="@DrawerVariant.Mini" OpenMiniOnHover="true" Class="mud-theme-primary" Style="background-color: #1a237e; color: white;">
-        <MudNavMenu Class="pt-4">
-            <div class="d-flex justify-center mb-4">
-                <MudIcon Icon="@Icons.Material.Filled.WindPower" Color="Color.Warning" Size="Size.Large" />
+    <MudDrawer @bind-Open="_drawerOpen"
+               ClipMode="DrawerClipMode.Always"
+               Elevation="0"
+               Variant="@DrawerVariant.Responsive"
+               Width="260px"
+               Style="background-color: #0d47a1; color: white;">
+
+        <MudNavMenu Class="pt-8">
+            <MudText Typo="Typo.overline" Class="px-4 mb-2 d-block" Style="color: #90caf9; font-weight: bold;">GENEL BAKIŞ</MudText>
+
+            <MudNavLink Href="/dashboard" Icon="@Icons.Material.Filled.Dashboard" IconColor="Color.Inherit" Class="nav-item-custom">Ana Sayfa</MudNavLink>
+            <MudNavLink Href="/turbines" Icon="@Icons.Material.Filled.WindPower" IconColor="Color.Inherit" Class="nav-item-custom">Türbinler</MudNavLink>
+            <MudNavLink Href="/map" Icon="@Icons.Material.Filled.Map" IconColor="Color.Inherit" Class="nav-item-custom">Harita</MudNavLink>
+
+            <MudText Typo="Typo.overline" Class="px-4 mt-6 mb-2 d-block" Style="color: #90caf9; font-weight: bold;">YÖNETİM</MudText>
+            <MudNavLink Href="/alerts" Icon="@Icons.Material.Filled.WarningAmber" IconColor="Color.Inherit" Class="nav-item-custom">Alarmlar</MudNavLink>
+            <MudNavLink Href="/reports" Icon="@Icons.Material.Filled.Analytics" IconColor="Color.Inherit" Class="nav-item-custom">Raporlar</MudNavLink>
+            <MudNavLink Href="/settings" Icon="@Icons.Material.Filled.Settings" IconColor="Color.Inherit" Class="nav-item-custom">Ayarlar</MudNavLink>
+
+            <div class="mt-auto px-2 pb-4" style="position: absolute; bottom: 0; width: 100%;">
+                <MudNavLink Href="/" Icon="@Icons.Material.Filled.Logout" IconColor="Color.Error" Style="color: #ffcdd2;">Çıkış Yap</MudNavLink>
             </div>
-
-            <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard" IconColor="Color.Inherit" Class="my-2">Ana Sayfa</MudNavLink>
-            <MudNavLink Href="/turbines" Icon="@Icons.Material.Filled.WindPower" IconColor="Color.Inherit" Class="my-2">Türbinler</MudNavLink>
-            <MudNavLink Href="/analytics" Icon="@Icons.Material.Filled.Analytics" IconColor="Color.Inherit" Class="my-2">Analizler</MudNavLink>
-            <MudNavLink Href="/settings" Icon="@Icons.Material.Filled.Settings" IconColor="Color.Inherit" Class="my-2">Ayarlar</MudNavLink>
         </MudNavMenu>
-
-        <div class="mt-auto mb-4">
-            <MudNavLink Href="/logout" Icon="@Icons.Material.Filled.Logout" IconColor="Color.Inherit">Çıkış</MudNavLink>
-        </div>
     </MudDrawer>
 
-    <MudMainContent Class="pt-16 px-4" Style="background-color: #f5f7fa; min-height: 100vh;">
-        <MudContainer MaxWidth="MaxWidth.Large">
+    <MudMainContent Style="background-color: #f5f7fa; min-height: 100vh;">
+        <MudContainer MaxWidth="MaxWidth.Large" Class="pt-8 px-6">
             @Body
         </MudContainer>
     </MudMainContent>
@@ -38,9 +47,20 @@
 
 @code {
     bool _drawerOpen = true;
+    void DrawerToggle() => _drawerOpen = !_drawerOpen;
 
-    void DrawerToggle()
-    {
-        _drawerOpen = !_drawerOpen;
-    }
+    private MudTheme _customTheme = new MudTheme()
+        {
+            PaletteLight = new PaletteLight()
+            {
+                Primary = "#0d47a1",    // Ana Lacivert
+                Secondary = "#ff9800",  // Turuncu Vurgu
+                AppbarBackground = "#ffffff",
+                Background = "#f5f7fa", // Açık Gri Zemin
+                TextPrimary = "#37474f",
+                DrawerBackground = "#0d47a1",
+                DrawerText = "#ffffff",
+                DrawerIcon = "#ffffff"
+            }
+        };
 }

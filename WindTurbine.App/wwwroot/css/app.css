@@ -86,3 +86,20 @@ h1:focus {
         padding-left: env(safe-area-inset-left);
     }
 }
+/* --- MainLayout Menü Stilleri --- */
+.nav-item-custom {
+    border-radius: 8px;
+    margin: 4px 12px;
+    transition: all 0.2s;
+}
+
+    .nav-item-custom:hover {
+        background-color: rgba(255,255,255,0.1);
+    }
+
+/* MudBlazor'ın aktif link sınıfını eziyoruz */
+.mud-nav-link.active {
+    background-color: #1565c0 !important; /* Daha açık mavi */
+    color: white !important;
+    font-weight: 600;
+}
