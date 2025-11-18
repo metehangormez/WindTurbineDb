@@ -1,8 +1,57 @@
 ﻿@page "/"
+@using WindTurbine.App.Services
+@using WindTurbine.DTOs.Alerts
+@inject IApiService ApiService
 
-<h1>Hello, world!</h1>
+<PageTitle>Ana Sayfa - Alarmlar</PageTitle>
 
-Welcome to your new app.
+<h1>Aktif Alarmlar</h1>
 
-<h1>Merhaba Dünya!</h1>
-<button>Bana Tıkla</button>
+<p>API'nizden alınan veriler aşağıdadır:</p>
+
+@if (alerts == null)
+{
+    <p><em>Veriler yükleniyor veya API'ye bağlanılamadı...</em></p>
+}
+else if (!alerts.Any())
+{
+    <p><em>Gösterilecek alarm bulunamadı. (API çalışıyor ama veri tabanı boş olabilir)</em></p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Zaman Damgası</th>
+                <th>Mesaj</th>
+                <th>Seviye</th>
+                <th>Durum</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var alert in alerts)
+            {
+                <tr>
+                    <td>@alert.AlertId</td>
+                    <td>@alert.Timestamp.ToLocalTime()</td>
+                    <td>@alert.Message</td>
+                    <td>@alert.Severity</td>
+                    <td>@alert.Status</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    
+    private List<AlertDto> alerts;
+
+   
+    protected override async Task OnInitializedAsync()
+    {
+        
+        alerts = await ApiService.GetAlertsAsync();
+    }
+}

@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\WindTurbine.DataAccess\WindTurbine.DataAccess.csproj" />
+    <ProjectReference Include="..\WindTurbine.DTOs\WindTurbine.DTOs.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using WindTurbine.App.Services;
 
 namespace WindTurbine.App
 {
@@ -20,6 +21,26 @@ namespace WindTurbine.App
     		builder.Services.AddBlazorWebViewDeveloperTools();
     		builder.Logging.AddDebug();
 #endif
+            builder.Services.AddSingleton<HttpClient>(sp =>
+            {
+
+                string baseAddress = "http://localhost:5279";
+
+
+                var handler = new HttpClientHandler
+                {
+                    ServerCertificateCustomValidationCallback =
+                        (sender, cert, chain, sslPolicyErrors) => true
+                };
+
+                return new HttpClient(handler)
+                {
+                    BaseAddress = new Uri(baseAddress)
+                };
+            });
+
+          
+            builder.Services.AddSingleton<IApiService, ApiService>();
 
             return builder.Build();
         }

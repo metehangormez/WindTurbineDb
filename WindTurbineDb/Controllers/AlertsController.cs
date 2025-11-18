@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using WindTurbine.Business.Abstract; // Business katmanını çağıracağız
+using WindTurbine.Business.Abstract;
+using WindTurbine.DTOs.Alerts; 
 using WindTurbine.Entities;
 
 namespace WindTurbineDb.Controllers
@@ -8,26 +9,23 @@ namespace WindTurbineDb.Controllers
     [ApiController]
     public class AlertsController : ControllerBase
     {
-        
         private readonly IAlertService _alertService;
+        public AlertsController(IAlertService alertService) { _alertService = alertService; }
 
-        public AlertsController(IAlertService alertService)
-        {
-            _alertService = alertService;
-        }
-
-        [HttpGet] 
+        [HttpGet]
         public IActionResult GetAll()
         {
+           
             var alerts = _alertService.GetAllAlerts();
-            return Ok(alerts); 
+            return Ok(alerts);
         }
 
-        [HttpPost] 
-        public IActionResult Create([FromBody] Alert alert)
+        [HttpPost]
+        public IActionResult Create([FromBody] AlertCreateDto alertDto) 
         {
-            var createdAlert = _alertService.CreateAlert(alert);
-            return CreatedAtAction(nameof(GetAll), new { id = createdAlert.AlertId }, createdAlert); 
+            var createdAlert = _alertService.CreateAlert(alertDto);
+            
+            return CreatedAtAction(nameof(GetAll), new { id = createdAlert.AlertId }, createdAlert);
         }
     }
 }
