@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
-using WindTurbine.App.Services;
+using WindTurbine.App.Services; 
+using MudBlazor.Services;       
 
 namespace WindTurbine.App
 {
@@ -18,29 +19,31 @@ namespace WindTurbine.App
             builder.Services.AddMauiBlazorWebView();
 
 #if DEBUG
-    		builder.Services.AddBlazorWebViewDeveloperTools();
-    		builder.Logging.AddDebug();
+            builder.Services.AddBlazorWebViewDeveloperTools();
+            builder.Logging.AddDebug();
 #endif
+
+           
             builder.Services.AddSingleton<HttpClient>(sp =>
             {
-
-                string baseAddress = "http://localhost:5279";
-
-
+                
                 var handler = new HttpClientHandler
                 {
-                    ServerCertificateCustomValidationCallback =
-                        (sender, cert, chain, sslPolicyErrors) => true
+                    ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
                 };
 
+                
                 return new HttpClient(handler)
                 {
-                    BaseAddress = new Uri(baseAddress)
+                    BaseAddress = new Uri("http://localhost:5279")
                 };
             });
 
-          
+            
             builder.Services.AddSingleton<IApiService, ApiService>();
+
+           
+            builder.Services.AddMudServices();
 
             return builder.Build();
         }
