@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
-using WindTurbine.App.Services; 
-using MudBlazor.Services;       
+using WindTurbine.App.Services;
+using MudBlazor.Services; // <-- BU ÇOK ÖNEMLİ
 
 namespace WindTurbine.App
 {
@@ -23,26 +23,19 @@ namespace WindTurbine.App
             builder.Logging.AddDebug();
 #endif
 
-           
+            // API Bağlantısı (Port numaranız 5279 idi, değişirse güncelleyin)
             builder.Services.AddSingleton<HttpClient>(sp =>
             {
-                
                 var handler = new HttpClientHandler
                 {
                     ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
                 };
-
-                
-                return new HttpClient(handler)
-                {
-                    BaseAddress = new Uri("http://localhost:5279")
-                };
+                return new HttpClient(handler) { BaseAddress = new Uri("http://localhost:5279") };
             });
 
-            
             builder.Services.AddSingleton<IApiService, ApiService>();
 
-           
+            // --- MUD BLAZOR SERVİSİ (BU EKSİKTİ) ---
             builder.Services.AddMudServices();
 
             return builder.Build();

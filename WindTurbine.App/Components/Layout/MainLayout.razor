@@ -4,18 +4,43 @@
 <MudDialogProvider />
 <MudSnackbarProvider />
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
+<MudLayout>
+    <MudAppBar Elevation="0" Color="Color.Transparent" Fixed="true" Class="px-4 mt-2">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Primary" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+        <MudSpacer />
+        <MudIconButton Icon="@Icons.Material.Filled.Notifications" Color="Color.Default" />
+        <MudAvatar Color="Color.Primary" Class="ml-3">MK</MudAvatar>
+    </MudAppBar>
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+    <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="0" Variant="@DrawerVariant.Mini" OpenMiniOnHover="true" Class="mud-theme-primary" Style="background-color: #1a237e; color: white;">
+        <MudNavMenu Class="pt-4">
+            <div class="d-flex justify-center mb-4">
+                <MudIcon Icon="@Icons.Material.Filled.WindPower" Color="Color.Warning" Size="Size.Large" />
+            </div>
+
+            <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard" IconColor="Color.Inherit" Class="my-2">Ana Sayfa</MudNavLink>
+            <MudNavLink Href="/turbines" Icon="@Icons.Material.Filled.WindPower" IconColor="Color.Inherit" Class="my-2">Türbinler</MudNavLink>
+            <MudNavLink Href="/analytics" Icon="@Icons.Material.Filled.Analytics" IconColor="Color.Inherit" Class="my-2">Analizler</MudNavLink>
+            <MudNavLink Href="/settings" Icon="@Icons.Material.Filled.Settings" IconColor="Color.Inherit" Class="my-2">Ayarlar</MudNavLink>
+        </MudNavMenu>
+
+        <div class="mt-auto mb-4">
+            <MudNavLink Href="/logout" Icon="@Icons.Material.Filled.Logout" IconColor="Color.Inherit">Çıkış</MudNavLink>
         </div>
+    </MudDrawer>
 
-        <article class="content px-4">
+    <MudMainContent Class="pt-16 px-4" Style="background-color: #f5f7fa; min-height: 100vh;">
+        <MudContainer MaxWidth="MaxWidth.Large">
             @Body
-        </article>
-    </main>
-</div>
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    bool _drawerOpen = true;
+
+    void DrawerToggle()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+}
