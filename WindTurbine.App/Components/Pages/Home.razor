@@ -1,177 +1,156 @@
-﻿@page "/"
+﻿@page "/dashboard"
 @using WindTurbine.App.Services
 @using WindTurbine.DTOs.Alerts
+@using MudBlazor
 @inject IApiService ApiService
 @inject ISnackbar Snackbar
-@page "/dashboard"
+
 <PageTitle>Dashboard</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4 mb-8">
-
-    <div class="d-flex justify-content-between align-items-center mb-6">
-        <div>
-            <MudText Typo="Typo.h4" Style="font-weight: 700; color: #2c3e50;">Ana Sayfa</MudText>
-        </div>
-        <MudButton Variant="Variant.Filled"
-                   Color="Color.Primary"
-                   StartIcon="@Icons.Material.Filled.Refresh"
-                   OnClick="VerileriYukle"
-                   Disabled="@yukleniyor">
-            @(yukleniyor ? "Yükleniyor..." : "Yenile")
-        </MudButton>
+<div class="d-flex justify-content-between align-items-center mb-6">
+    <div>
+        <MudText Typo="Typo.h5" Style="font-weight: 700; color: #2c3e50;">Genel Bakış</MudText>
+        <MudText Typo="Typo.body2" Class="mud-text-secondary">Son güncelleme: @DateTime.Now.ToString("HH:mm")</MudText>
     </div>
+    <MudButton Variant="Variant.Filled" 
+               Color="Color.Primary" 
+               StartIcon="@Icons.Material.Filled.Refresh" 
+               OnClick="VerileriYukle"
+               Disabled="@yukleniyor">
+        @(yukleniyor ? "Yükleniyor..." : "Yenile")
+    </MudButton>
+</div>
 
-    <MudGrid Class="mb-6">
-
-        <MudItem xs="12" sm="6" md="3">
-            <MudPaper Elevation="0" Class="pa-4 rounded-lg d-flex flex-column justify-space-between" Style="background-color: #ffebee; height: 180px;">
-                <div class="d-flex justify-space-between">
-                    <div>
-                        <MudText Typo="Typo.subtitle2" Color="Color.Error">Riskli Uyarılar</MudText>
-                        <MudText Typo="Typo.h3" Color="Color.Error" Style="font-weight: 700;">@riskliSayisi</MudText>
-                    </div>
-                    <MudIcon Icon="@Icons.Material.Filled.Warning" Color="Color.Error" Size="Size.Large" />
+<MudGrid Class="mb-6">
+    <MudItem xs="12" sm="6" md="3">
+        <MudPaper Elevation="0" Class="pa-4 rounded-lg border-solid border-1 mud-border-lines-default d-flex flex-column justify-space-between" Style="height: 100%;">
+            <div class="d-flex justify-space-between align-start">
+                <div>
+                    <MudText Typo="Typo.subtitle2" Class="mud-text-secondary">RİSKLİ UYARILAR</MudText>
+                    <MudText Typo="Typo.h4" Color="Color.Error" Style="font-weight: 700;">@riskliSayisi</MudText>
                 </div>
-                <MudButton Variant="Variant.Filled" Color="Color.Error" Size="Size.Small" FullWidth="true" Class="mt-2">Uyarıları Gör</MudButton>
-            </MudPaper>
-        </MudItem>
+                <MudAvatar Color="Color.Error" Variant="Variant.Filled" Size="Size.Medium" Rounded="true">
+                    <MudIcon Icon="@Icons.Material.Filled.PriorityHigh" />
+                </MudAvatar>
+            </div>
+            <MudButton Variant="Variant.Text" Color="Color.Error" Size="Size.Small" FullWidth="true" Class="mt-2 justify-start px-0">Uyarıları Gör</MudButton>
+        </MudPaper>
+    </MudItem>
 
-        <MudItem xs="12" sm="6" md="3">
-            <MudPaper Elevation="0" Class="pa-4 rounded-lg d-flex flex-column justify-space-between" Style="background-color: #e8f5e9; height: 180px;">
-                <div class="d-flex justify-space-between">
-                    <div>
-                        <MudText Typo="Typo.subtitle2" Color="Color.Success">Öneriler</MudText>
-                        <MudText Typo="Typo.h3" Color="Color.Success" Style="font-weight: 700;">89</MudText>
-                    </div>
-                    <MudIcon Icon="@Icons.Material.Filled.AutoAwesome" Color="Color.Success" Size="Size.Large" />
+    <MudItem xs="12" sm="6" md="3">
+        <MudPaper Elevation="0" Class="pa-4 rounded-lg border-solid border-1 mud-border-lines-default d-flex flex-column justify-space-between" Style="height: 100%;">
+            <div class="d-flex justify-space-between align-start">
+                <div>
+                    <MudText Typo="Typo.subtitle2" Class="mud-text-secondary">AI ÖNERİLERİ</MudText>
+                    <MudText Typo="Typo.h4" Color="Color.Success" Style="font-weight: 700;">89</MudText>
                 </div>
-                <MudButton Variant="Variant.Filled" Color="Color.Success" Size="Size.Small" FullWidth="true" Class="mt-2">Türbinleri İncele</MudButton>
-            </MudPaper>
-        </MudItem>
+                <MudAvatar Color="Color.Success" Variant="Variant.Filled" Size="Size.Medium" Rounded="true">
+                    <MudIcon Icon="@Icons.Material.Filled.AutoAwesome" />
+                </MudAvatar>
+            </div>
+            <MudButton Variant="Variant.Text" Color="Color.Success" Size="Size.Small" FullWidth="true" Class="mt-2 justify-start px-0">Türbinleri İncele</MudButton>
+        </MudPaper>
+    </MudItem>
 
-        <MudItem xs="12" sm="6" md="3">
-            <MudPaper Elevation="0" Class="pa-4 rounded-lg d-flex flex-column justify-space-between" Style="background-color: #ede7f6; height: 180px;">
-                <div class="d-flex justify-space-between">
-                    <div>
-                        <MudText Typo="Typo.subtitle2" Color="Color.Primary">Emreamadelik</MudText>
-                        <MudText Typo="Typo.h3" Color="Color.Primary" Style="font-weight: 700;">98%</MudText>
-                    </div>
-                    <MudIcon Icon="@Icons.Material.Filled.Speed" Color="Color.Primary" Size="Size.Large" />
+    <MudItem xs="12" sm="6" md="3">
+        <MudPaper Elevation="0" Class="pa-4 rounded-lg border-solid border-1 mud-border-lines-default d-flex flex-column justify-space-between" Style="height: 100%;">
+            <div class="d-flex justify-space-between align-start">
+                <div>
+                    <MudText Typo="Typo.subtitle2" Class="mud-text-secondary">EMREAMADELİK</MudText>
+                    <MudText Typo="Typo.h4" Color="Color.Info" Style="font-weight: 700;">98%</MudText>
                 </div>
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" FullWidth="true" Class="mt-2">Detayları İncele</MudButton>
-            </MudPaper>
-        </MudItem>
-
-        <MudItem xs="12" sm="6" md="3">
-            <MudPaper Elevation="0" Class="pa-4 rounded-lg d-flex flex-column justify-space-between" Style="background-color: #fff3e0; height: 180px;">
-                <div class="d-flex justify-space-between">
-                    <div>
-                        <MudText Typo="Typo.subtitle2" Color="Color.Warning">Toplam Üretim</MudText>
-                        <MudText Typo="Typo.h3" Color="Color.Warning" Style="font-weight: 700;">625 MW</MudText>
-                    </div>
-                    <MudIcon Icon="@Icons.Material.Filled.Bolt" Color="Color.Warning" Size="Size.Large" />
+                <MudAvatar Color="Color.Info" Variant="Variant.Filled" Size="Size.Medium" Rounded="true">
+                    <MudIcon Icon="@Icons.Material.Filled.Speed" />
+                </MudAvatar>
+            </div>
+            <MudButton Variant="Variant.Text" Color="Color.Info" Size="Size.Small" FullWidth="true" Class="mt-2 justify-start px-0">Detayları İncele</MudButton>
+        </MudPaper>
+    </MudItem>
+    
+    <MudItem xs="12" sm="6" md="3">
+         <MudPaper Elevation="0" Class="pa-4 rounded-lg border-solid border-1 mud-border-lines-default d-flex flex-column justify-space-between" Style="height: 100%;">
+            <div class="d-flex justify-space-between align-start">
+                <div>
+                    <MudText Typo="Typo.subtitle2" Class="mud-text-secondary">GÜNLÜK ÜRETİM</MudText>
+                    <MudText Typo="Typo.h4" Color="Color.Warning" Style="font-weight: 700;">625 MW</MudText>
                 </div>
-                <MudButton Variant="Variant.Filled" Color="Color.Warning" Size="Size.Small" FullWidth="true" Class="mt-2">Detaylar</MudButton>
-            </MudPaper>
-        </MudItem>
-    </MudGrid>
+                <MudAvatar Color="Color.Warning" Variant="Variant.Filled" Size="Size.Medium" Rounded="true">
+                    <MudIcon Icon="@Icons.Material.Filled.Bolt" />
+                </MudAvatar>
+            </div>
+            <MudButton Variant="Variant.Text" Color="Color.Warning" Size="Size.Small" FullWidth="true" Class="mt-2 justify-start px-0">Raporu Aç</MudButton>
+        </MudPaper>
+    </MudItem>
+</MudGrid>
 
-    <MudGrid Class="mb-6">
-        <MudItem xs="12" md="8">
-            <MudPaper Elevation="0" Class="pa-4 rounded-lg border-solid border-1 mud-border-lines-default">
-                <MudText Typo="Typo.h6" Class="mb-4"><b>Gün Beklentisi (MW)</b></MudText>
-                <MudChart ChartType="ChartType.Bar"
-                          ChartSeries="@SeriesExpectation"
-                          XAxisLabels="@XAxisLabels"
-                          Width="100%"
-                          Height="300px"></MudChart>
-            </MudPaper>
-        </MudItem>
+<MudGrid>
+    <MudItem xs="12" md="8">
+        <MudPaper Elevation="0" Class="pa-4 rounded-lg border-solid border-1 mud-border-lines-default">
+            <MudText Typo="Typo.h6" Class="mb-4"><b>Günlük Enerji Üretimi</b></MudText>
+            <MudChart ChartType="ChartType.Line" 
+                      ChartSeries="@Series" 
+                      XAxisLabels="@XAxisLabels" 
+                      Width="100%" 
+                      Height="350px"
+                      ChartOptions="@chartOptions"></MudChart>
+        </MudPaper>
+    </MudItem>
 
-        <MudItem xs="12" md="4">
-            <MudPaper Elevation="0" Class="pa-4 rounded-lg border-solid border-1 mud-border-lines-default">
-                <MudText Typo="Typo.h6" Class="mb-4"><b>Önlenen Kayıp (MW)</b></MudText>
-                <MudChart ChartType="ChartType.Bar"
-                          ChartSeries="@SeriesLoss"
-                          XAxisLabels="@XAxisLabelsLoss"
-                          Width="100%"
-                          Height="300px"></MudChart>
-            </MudPaper>
-        </MudItem>
-    </MudGrid>
+    <MudItem xs="12" md="4">
+        <MudPaper Elevation="0" Class="pa-0 rounded-lg border-solid border-1 mud-border-lines-default overflow-hidden" Style="height: 100%;">
+            <div class="pa-4 border-b-1 mud-border-lines-default d-flex justify-space-between align-center">
+                <MudText Typo="Typo.h6" Style="font-weight: 600;">Son Alarmlar</MudText>
+                <MudIconButton Icon="@Icons.Material.Filled.ArrowForward" Size="Size.Small" />
+            </div>
 
-    <MudPaper Elevation="0" Class="pa-0 rounded-lg border-solid border-1 mud-border-lines-default overflow-hidden">
-        <div class="pa-4 border-b-1 mud-border-lines-default">
-            <MudText Typo="Typo.h6"><b>Canlı Alarm Akışı</b></MudText>
-        </div>
-
-        <MudTable Items="@alerts"
-                  Context="alert"
-                  Hover="true"
-                  Elevation="0"
-                  Loading="@yukleniyor"
-                  LoadingProgressColor="Color.Primary"
-                  Dense="true"
-                  Striped="true"
-                  Height="300px"
-                  FixedHeader="true">
-            <HeaderContent>
-                <MudTh>Zaman</MudTh>
-                <MudTh>Mesaj</MudTh>
-                <MudTh>Seviye</MudTh>
-                <MudTh>Durum</MudTh>
-            </HeaderContent>
-            <RowTemplate>
-                <MudTd DataLabel="Zaman">@alert.Timestamp.ToLocalTime().ToString("HH:mm:ss")</MudTd>
-                <MudTd DataLabel="Mesaj">
-                    <MudText Typo="Typo.body2" Style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;">
-                        @alert.Message
-                    </MudText>
-                </MudTd>
-                <MudTd DataLabel="Seviye">
-                    @if (alert.Severity >= 3)
-                    {
-                        <MudChip T="string" Color="Color.Error" Size="Size.Small" Label="true">KRİTİK</MudChip>
-                    }
-                    else if (alert.Severity == 2)
-                    {
-                        <MudChip T="string" Color="Color.Warning" Size="Size.Small" Label="true">ORTA</MudChip>
-                    }
-                    else
-                    {
-                        <MudChip T="string" Color="Color.Success" Size="Size.Small" Label="true">DÜŞÜK</MudChip>
-                    }
-                </MudTd>
-                <MudTd DataLabel="Durum">@alert.Status</MudTd>
-            </RowTemplate>
-            <NoRecordsContent>
-                <MudText Typo="Typo.body2" Class="pa-4">Veri bekleniyor...</MudText>
-            </NoRecordsContent>
-        </MudTable>
-    </MudPaper>
-
-</MudContainer>
+            <MudTable Items="@alerts" 
+                      Hover="true" 
+                      Elevation="0" 
+                      Loading="@yukleniyor" 
+                      LoadingProgressColor="Color.Primary"
+                      Dense="true"
+                      Striped="true"
+                      Height="340px"
+                      FixedHeader="true">
+                <HeaderContent>
+                    <MudTh>Zaman</MudTh>
+                    <MudTh>Mesaj</MudTh>
+                    <MudTh>Seviye</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Zaman">@context.Timestamp.ToLocalTime().ToString("HH:mm")</MudTd>
+                    <MudTd DataLabel="Mesaj">
+                        <MudText Typo="Typo.body2" Style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px;">
+                            @context.Message
+                        </MudText>
+                    </MudTd>
+                    <MudTd DataLabel="Seviye">
+                        <MudChip T="string" Color="@GetSeverityColor(context.Severity)" Size="Size.Small" Label="true">
+                            @GetSeverityText(context.Severity)
+                        </MudChip>
+                    </MudTd>
+                </RowTemplate>
+                <NoRecordsContent>
+                    <MudText Typo="Typo.body2" Class="pa-4">Veri yok.</MudText>
+                </NoRecordsContent>
+            </MudTable>
+        </MudPaper>
+    </MudItem>
+</MudGrid>
 
 @code {
     private List<AlertDto> alerts = new List<AlertDto>();
     private int riskliSayisi = 0;
     private bool yukleniyor = true;
 
-    // --- GRAFİK VERİLERİ (Simülasyon) ---
-    // 1. Gün Beklentisi Grafiği
-    public List<ChartSeries> SeriesExpectation = new List<ChartSeries>()
+    // Grafik Verileri (Simülasyon)
+    public List<ChartSeries> Series = new List<ChartSeries>()
     {
-        new ChartSeries() { Name = "Gerçekleşen", Data = new double[] { 40, 55, 25, 60, 80, 95, 40, 20 } },
-        new ChartSeries() { Name = "Beklenen", Data = new double[] { 35, 50, 30, 55, 75, 90, 45, 25 } },
+        new ChartSeries() { Name = "Gerçekleşen (MW)", Data = new double[] { 40, 20, 25, 27, 46, 60, 48, 80, 95 } },
+        new ChartSeries() { Name = "Beklenen (MW)", Data = new double[] { 19, 24, 35, 13, 28, 15, 13, 16, 31 } },
     };
-    public string[] XAxisLabels = { "03:00", "06:00", "09:00", "12:00", "15:00", "18:00", "21:00", "00:00" };
-
-    // 2. Önlenen Kayıp Grafiği
-    public List<ChartSeries> SeriesLoss = new List<ChartSeries>()
-    {
-        new ChartSeries() { Name = "Önlenen Kayıp", Data = new double[] { 5, 12, 8, 25 } },
-    };
-    public string[] XAxisLabelsLoss = { "T1", "T2", "T3", "T4" }; // Türbinler
+    public string[] XAxisLabels = { "00:00", "03:00", "06:00", "09:00", "12:00", "15:00", "18:00", "21:00", "23:59" };
+    private ChartOptions chartOptions = new ChartOptions() { YAxisLines = true };
 
     protected override async Task OnInitializedAsync()
     {
@@ -186,7 +165,7 @@
             var veri = await ApiService.GetAlertsAsync();
             if (veri != null)
             {
-                alerts = veri.OrderByDescending(x => x.Timestamp).Take(50).ToList();
+                alerts = veri.OrderByDescending(x => x.Timestamp).Take(20).ToList();
                 riskliSayisi = alerts.Count(a => a.Severity >= 3);
             }
         }
@@ -198,5 +177,20 @@
         {
             yukleniyor = false;
         }
+    }
+
+    // Yardımcı Fonksiyonlar (Hata almamak için)
+    private Color GetSeverityColor(int severity)
+    {
+        if (severity >= 3) return Color.Error;
+        if (severity == 2) return Color.Warning;
+        return Color.Success;
+    }
+
+    private string GetSeverityText(int severity)
+    {
+        if (severity >= 3) return "KRİTİK";
+        if (severity == 2) return "ORTA";
+        return "DÜŞÜK";
     }
 }
