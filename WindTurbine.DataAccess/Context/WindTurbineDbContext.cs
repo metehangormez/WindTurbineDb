@@ -10,7 +10,7 @@ namespace WindTurbine.DataAccess.Context
         {
         }
 
-      
+        public DbSet<GeneratedReport> GeneratedReports { get; set; }
         public DbSet<WindFarm> WindFarms { get; set; }
         public DbSet<Turbine> Turbines { get; set; }
         public DbSet<Alert> Alerts { get; set; }

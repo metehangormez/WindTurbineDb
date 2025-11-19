@@ -7,6 +7,11 @@ namespace WindTurbine.DTOs.Dashboard
         // Kart Verileri
         public int RiskliUyariSayisi { get; set; }
         public int ToplamOneriSayisi { get; set; }
+
+        // --- EKSİK OLAN SATIR BUYDU ---
+        public int ToplamTurbinSayisi { get; set; }
+        // ------------------------------
+
         public int AktifTurbinSayisi { get; set; }
         public double ToplamUretimMW { get; set; }
         public double VerimlilikYuzdesi { get; set; }

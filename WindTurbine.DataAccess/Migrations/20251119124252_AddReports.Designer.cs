@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WindTurbine.DataAccess.Context;
 
@@ -11,9 +12,11 @@ using WindTurbine.DataAccess.Context;
 namespace WindTurbine.DataAccess.Migrations
 {
     [DbContext(typeof(WindTurbineDbContext))]
-    partial class WindTurbineDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251119124252_AddReports")]
+    partial class AddReports
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
