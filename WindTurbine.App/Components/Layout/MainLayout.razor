@@ -1,4 +1,7 @@
 ﻿@inherits LayoutComponentBase
+@using MudBlazor
+@using WindTurbine.App.Services
+@inject UserSession UserSession
 
 <MudThemeProvider Theme="_customTheme" />
 <MudDialogProvider />
@@ -9,25 +12,28 @@
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
         <MudText Typo="Typo.h6" Class="ml-3" Style="font-weight: 800; letter-spacing: 1px; color: #1a237e;">WIND MANAGER</MudText>
         <MudSpacer />
-        <MudIconButton Icon="@Icons.Material.Filled.NotificationsNone" Color="Color.Inherit" />
-        <MudAvatar Color="Color.Primary" Size="Size.Small" Class="ml-3" Style="font-size: 0.8rem;">AD</MudAvatar>
+
+        <MudIconButton Icon="@Icons.Material.Filled.NotificationsNone" Color="Color.Inherit" Title="Bildirim Yok" />
+
+        <MudAvatar Color="Color.Primary" Size="Size.Small" Class="ml-3" Style="font-size: 0.8rem;">
+            @(string.IsNullOrEmpty(UserSession.FullName) ? "M" : UserSession.FullName.Substring(0, 1).ToUpper())
+        </MudAvatar>
     </MudAppBar>
 
-    <MudDrawer @bind-Open="_drawerOpen"
-               ClipMode="DrawerClipMode.Always"
-               Elevation="0"
-               Variant="@DrawerVariant.Responsive"
+    <MudDrawer @bind-Open="_drawerOpen" 
+               ClipMode="DrawerClipMode.Always" 
+               Elevation="0" 
+               Variant="@DrawerVariant.Responsive" 
                Width="260px"
                Style="background-color: #0d47a1; color: white;">
 
         <div class="d-flex flex-column mud-height-full">
 
-            <MudNavMenu Class="pt-8">
+            <MudNavMenu Class="pt-8 flex-grow-1">
                 <MudText Typo="Typo.overline" Class="px-4 mb-2 d-block" Style="color: #90caf9; font-weight: bold;">GENEL BAKIŞ</MudText>
 
                 <MudNavLink Href="/dashboard" Icon="@Icons.Material.Filled.Dashboard" IconColor="Color.Inherit" Class="nav-item-custom">Ana Sayfa</MudNavLink>
                 <MudNavLink Href="/turbines" Icon="@Icons.Material.Filled.WindPower" IconColor="Color.Inherit" Class="nav-item-custom">Türbinler</MudNavLink>
-                <MudNavLink Href="/analytics" Icon="@Icons.Material.Filled.Analytics" IconColor="Color.Inherit" Class="nav-item-custom">Analizler</MudNavLink>
                 <MudNavLink Href="/map" Icon="@Icons.Material.Filled.Map" IconColor="Color.Inherit" Class="nav-item-custom">Harita</MudNavLink>
 
                 <MudText Typo="Typo.overline" Class="px-4 mt-6 mb-2 d-block" Style="color: #90caf9; font-weight: bold;">YÖNETİM</MudText>
@@ -35,8 +41,6 @@
                 <MudNavLink Href="/reports" Icon="@Icons.Material.Filled.Analytics" IconColor="Color.Inherit" Class="nav-item-custom">Raporlar</MudNavLink>
                 <MudNavLink Href="/settings" Icon="@Icons.Material.Filled.Settings" IconColor="Color.Inherit" Class="nav-item-custom">Ayarlar</MudNavLink>
             </MudNavMenu>
-
-            <div class="flex-grow-1"></div>
 
             <MudNavMenu Class="pb-4">
                 <MudDivider Class="mb-2 mx-4" Style="background-color: rgba(255,255,255,0.2);" />

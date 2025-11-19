@@ -1,0 +1,128 @@
+﻿@page "/settings"
+@using WindTurbine.App.Services
+@inject ISnackbar Snackbar
+@inject UserSession UserSession
+
+<PageTitle>Ayarlar</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-6 mb-6">
+    <MudText Typo="Typo.h5" Color="Color.Primary" Class="mb-4"><b>Sistem Ayarları</b></MudText>
+
+    <MudPaper Elevation="2" Class="rounded-lg overflow-hidden">
+        <MudTabs Elevation="0" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6">
+
+            <MudTabPanel Text="Profil" Icon="@Icons.Material.Filled.Person">
+                <MudGrid>
+                    <MudItem xs="12" sm="4" Class="d-flex justify-center align-center border-r-1 mud-border-lines-default">
+                        <div class="d-flex flex-column align-center">
+                            <MudAvatar style="height:100px; width:100px; font-size:2rem;" Color="Color.Primary">
+                                @(string.IsNullOrEmpty(adSoyad) ? "U" : adSoyad.Substring(0, 1).ToUpper())
+                            </MudAvatar>
+                        </div>
+                    </MudItem>
+                    <MudItem xs="12" sm="8">
+                        <MudForm>
+                            <MudTextField @bind-Value="adSoyad" Label="Ad Soyad" Variant="Variant.Outlined" Class="mb-4" />
+                            <MudTextField @bind-Value="email" Label="E-Posta" Variant="Variant.Outlined" Class="mb-4" ReadOnly="true" />
+                            <MudTextField @bind-Value="rol" Label="Görevi" Variant="Variant.Outlined" Class="mb-4" ReadOnly="true" />
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Kaydet">Değişiklikleri Kaydet</MudButton>
+                        </MudForm>
+                    </MudItem>
+                </MudGrid>
+            </MudTabPanel>
+
+            <MudTabPanel Text="Güvenlik" Icon="@Icons.Material.Filled.Lock">
+                <MudText Typo="Typo.h6" Class="mb-4">Şifre Değiştir</MudText>
+                <MudGrid>
+                    <MudItem xs="12" md="6">
+                        <MudTextField T="string" Label="Mevcut Şifre" InputType="InputType.Password" Variant="Variant.Outlined" Class="mb-4" />
+                    </MudItem>
+                    <MudItem xs="12" md="6"></MudItem>
+                    <MudItem xs="12" md="6">
+                        <MudTextField T="string" Label="Yeni Şifre" InputType="InputType.Password" Variant="Variant.Outlined" Class="mb-4" />
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                        <MudTextField T="string" Label="Yeni Şifre (Tekrar)" InputType="InputType.Password" Variant="Variant.Outlined" Class="mb-4" />
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudButton Variant="Variant.Filled" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Save" OnClick="SifreDegistir">Şifreyi Güncelle</MudButton>
+                    </MudItem>
+                </MudGrid>
+            </MudTabPanel>
+
+            <MudTabPanel Text="Bildirimler" Icon="@Icons.Material.Filled.Notifications">
+                <MudStack Spacing="4">
+
+                    <div class="d-flex justify-space-between align-center pa-2 hover:bg-gray-100 rounded">
+                        <div>
+                            <MudText><b>E-Posta Bildirimleri</b></MudText>
+                            <MudText Typo="Typo.caption">Kritik alarmlarda e-posta al.</MudText>
+                        </div>
+                        <MudSwitch T="bool" Color="Color.Primary" Value="true" />
+                    </div>
+
+                    <MudDivider />
+
+                    <div class="d-flex justify-space-between align-center pa-2">
+                        <div>
+                            <MudText><b>SMS Bildirimleri</b></MudText>
+                            <MudText Typo="Typo.caption">Acil durumlarda SMS gönder.</MudText>
+                        </div>
+                        <MudSwitch T="bool" Color="Color.Primary" />
+                    </div>
+
+                    <MudDivider />
+
+                    <div class="d-flex justify-space-between align-center pa-2">
+                        <div>
+                            <MudText><b>Haftalık Rapor</b></MudText>
+                            <MudText Typo="Typo.caption">Her Pazartesi otomatik rapor gönder.</MudText>
+                        </div>
+                        <MudSwitch T="bool" Color="Color.Primary" Value="true" />
+                    </div>
+
+                </MudStack>
+            </MudTabPanel>
+
+             <MudTabPanel Text="Sistem" Icon="@Icons.Material.Filled.Info">
+                <MudSimpleTable Style="overflow-x: auto;">
+                    <tbody>
+                        <tr><td><b>Uygulama Versiyonu</b></td><td>v1.0.0</td></tr>
+                        <tr><td><b>Kullanıcı ID</b></td><td>@userId</td></tr>
+                        <tr><td><b>Veritabanı</b></td><td>MS SQL Server</td></tr>
+                    </tbody>
+                </MudSimpleTable>
+            </MudTabPanel>
+
+        </MudTabs>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private string adSoyad;
+    private string email;
+    private string rol;
+    private int userId;
+
+    protected override void OnInitialized()
+    {
+        if (UserSession != null)
+        {
+            adSoyad = UserSession.FullName ?? "Misafir";
+            email = UserSession.Email ?? "Giriş Yapılmadı";
+            rol = UserSession.Role ?? "İzleyici";
+            userId = UserSession.UserId;
+        }
+    }
+
+    private void Kaydet()
+    {
+        UserSession.FullName = adSoyad;
+        Snackbar.Add("Profil bilgileri güncellendi.", Severity.Success);
+    }
+
+    private void SifreDegistir()
+    {
+        Snackbar.Add("Şifreniz başarıyla değiştirildi.", Severity.Success);
+    }
+}

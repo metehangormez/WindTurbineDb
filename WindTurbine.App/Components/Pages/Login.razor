@@ -3,9 +3,11 @@
 @using WindTurbine.DTOs.Auth
 @using WindTurbine.App.Services  
 @using System.ComponentModel.DataAnnotations
+@using Microsoft.Maui.Storage 
 @inject NavigationManager NavManager
 @inject ISnackbar Snackbar
 @inject IApiService ApiService 
+@inject UserSession UserSession
 
 <PageTitle>Giriş Yap</PageTitle>
 
@@ -47,8 +49,9 @@
                               Class="mb-2"/>
 
                 <div class="d-flex justify-space-between align-center mb-6">
-                    <MudCheckBox T="bool" Label="Beni Hatırla" Color="Color.Primary" Dense="true" />
-                    <MudLink Href="#" Underline="Underline.None" Color="Color.Primary" Typo="Typo.body2">Şifremi Unuttum?</MudLink>
+                    <MudCheckBox T="bool" @bind-Value="beniHatirla" Label="Beni Hatırla" Color="Color.Primary" Dense="true" />
+
+                    <MudLink OnClick="@SifremiUnuttum" Underline="Underline.None" Color="Color.Primary" Typo="Typo.body2" Style="cursor: pointer;">Şifremi Unuttum?</MudLink>
                 </div>
 
                 <MudButton Variant="Variant.Filled" 
@@ -72,17 +75,44 @@
     bool success;
     MudForm form;
     UserLoginDto loginDto = new UserLoginDto();
+    bool beniHatirla = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Uygulama açılınca hafızayı kontrol et (Beni Hatırla)
+        if (Preferences.ContainsKey("SavedEmail"))
+        {
+            loginDto.Email = Preferences.Get("SavedEmail", "");
+            beniHatirla = true;
+        }
+    }
 
     private async Task GirisYap()
     {
         form.Validate();
         if (success)
         {
-            // API'ye gerçek giriş isteği gönderiyoruz
+            // API'ye giriş isteği gönder
             var sonuc = await ApiService.LoginAsync(loginDto);
 
             if (sonuc)
             {
+                // 1. Oturum Bilgilerini Doldur 
+                // (Gerçek projede API'den dönen User nesnesini buraya yazarız)
+                UserSession.Email = loginDto.Email;
+                UserSession.FullName = "Metehan Görmez";
+                UserSession.Role = "Admin";
+
+                // 2. Beni Hatırla Mantığı (Telefona/PC'ye kaydet)
+                if (beniHatirla)
+                {
+                    Preferences.Set("SavedEmail", loginDto.Email);
+                }
+                else
+                {
+                    Preferences.Remove("SavedEmail");
+                }
+
                 Snackbar.Add("Giriş Başarılı!", Severity.Success);
                 NavManager.NavigateTo("/dashboard");
             }
@@ -91,5 +121,11 @@
                 Snackbar.Add("E-posta veya şifre hatalı!", Severity.Error);
             }
         }
+    }
+
+    // Şifremi Unuttum Butonu
+    private void SifremiUnuttum()
+    {
+        Snackbar.Add("Lütfen sistem yöneticinizle iletişime geçin.", Severity.Info);
     }
 }

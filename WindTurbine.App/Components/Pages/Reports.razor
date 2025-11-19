@@ -140,8 +140,10 @@
                     FileSize = $"{excelContent.Length / 1024} KB",
                     Status = "Hazır"
                 };
-
-            reports.Insert(0, yeniRapor); 
+            await ApiService.CreateReportAsync(yeniRapor);
+            var guncelListe = new List<ReportDto>(reports);
+            guncelListe.Insert(0, yeniRapor);
+            reports = guncelListe;
             StateHasChanged(); 
 
             Snackbar.Add("Rapor oluşturuldu ve listeye eklendi.", Severity.Success);

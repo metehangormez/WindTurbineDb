@@ -1,21 +1,28 @@
 ﻿using System.Net.Http.Json;
 using WindTurbine.DTOs.Alerts;
 using WindTurbine.DTOs.Dashboard;
+using WindTurbine.DTOs.Reports;
 using WindTurbine.DTOs.Turbines;
-using WindTurbine.DTOs.Weather; // Yeni DTO'yu kullanıyoruz
+using WindTurbine.DTOs.Weather; 
 
 namespace WindTurbine.App.Services
 {
     public class ApiService : IApiService
     {
-        private readonly HttpClient _httpClient; // Bizim Local API'miz için
+        public async Task<bool> CreateReportAsync(ReportDto report)
+        {
+            
+            var response = await _httpClient.PostAsJsonAsync("api/Reports", report);
+            return response.IsSuccessStatusCode;
+        }
+        private readonly HttpClient _httpClient;
 
         public ApiService(HttpClient httpClient)
         {
             _httpClient = httpClient;
         }
 
-        // ... (Diğer metodlar: Login, Register, GetAlerts AYNI KALSIN) ...
+    
         public async Task<DashboardDto> GetDashboardAsync() => await _httpClient.GetFromJsonAsync<DashboardDto>("api/Dashboard");
         public async Task<List<AlertDto>> GetAlertsAsync() => await _httpClient.GetFromJsonAsync<List<AlertDto>>("api/Alerts");
         public async Task<List<TurbineDto>> GetTurbinesAsync() => await _httpClient.GetFromJsonAsync<List<TurbineDto>>("api/Turbines");
@@ -143,11 +150,18 @@ namespace WindTurbine.App.Services
         }
 
         // ... (Rapor Metodu varsa o da kalsın) ...
-        public async Task<List<WindTurbine.DTOs.Reports.ReportDto>> GetReportsAsync()
+        public async Task<List<ReportDto>> GetReportsAsync()
         {
-            // (Rapor kodunuz buradaydı, aynen kalsın)
-            await Task.Delay(100);
-            return new List<WindTurbine.DTOs.Reports.ReportDto>(); // Veya eski kodunuz
+            try
+            {
+                // Artık SAHTE VERİ YOK. Gerçek API'ye gidiyor.
+                return await _httpClient.GetFromJsonAsync<List<ReportDto>>("api/Reports");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Raporlar alınamadı: {ex.Message}");
+                return new List<ReportDto>();
+            }
         }
     }
 }

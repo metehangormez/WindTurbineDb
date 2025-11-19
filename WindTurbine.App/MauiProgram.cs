@@ -8,6 +8,7 @@ namespace WindTurbine.App
     {
         public static MauiApp CreateMauiApp()
         {
+
             var builder = MauiApp.CreateBuilder();
             builder
                 .UseMauiApp<App>()
@@ -17,6 +18,7 @@ namespace WindTurbine.App
                 });
 
             builder.Services.AddMauiBlazorWebView();
+            builder.Services.AddSingleton<UserSession>();
 
 #if DEBUG
             builder.Services.AddBlazorWebViewDeveloperTools();

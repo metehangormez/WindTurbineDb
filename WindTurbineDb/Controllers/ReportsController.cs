@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using WindTurbine.DataAccess.Context;
 using WindTurbine.Entities;
+using WindTurbine.DTOs.Reports; // DTO namespace'ini eklemeyi unutmayın
+using System;
+using System.Linq;
 
 namespace WindTurbineDb.Controllers
 {
@@ -20,25 +23,42 @@ namespace WindTurbineDb.Controllers
         {
             var reports = _context.GeneratedReports
                 .OrderByDescending(r => r.GeneratedDate)
-                .Select(r => new
+                .Select(r => new ReportDto
                 {
-                    r.Id,
-                    r.Title,
-                    r.GeneratedDate,
-                    r.FileType,
-                    r.FileSize
+                    ReportId = r.Id,
+                    Title = r.Title,
+                    GeneratedDate = r.GeneratedDate,
+                    FileType = r.FileType,
+                    FileSize = r.FileSize,
+                    Status = "Hazır"
                 })
                 .ToList();
             return Ok(reports);
         }
 
         [HttpPost]
-        public IActionResult Create([FromBody] GeneratedReport report)
+        public IActionResult Create([FromBody] ReportDto dto)
         {
-            report.GeneratedDate = DateTime.UtcNow;
+            var report = new GeneratedReport
+            {
+                Title = dto.Title,
+                GeneratedDate = DateTime.UtcNow,
+                FileType = dto.FileType,
+                FileSize = dto.FileSize,
+
+                // --- HATAYI ÇÖZEN SATIR BURASI ---
+                // Veritabanı bu alanın NULL olmasına izin vermediği için
+                // boş bir byte dizisi (byte array) atıyoruz.
+                Content = new byte[0]
+                // --------------------------------
+            };
+
             _context.GeneratedReports.Add(report);
             _context.SaveChanges();
-            return Ok(report);
+
+            // Oluşan ID'yi geri dönmek iyi bir pratiktir
+            dto.ReportId = report.Id;
+            return Ok(dto);
         }
     }
 }
