@@ -1,0 +1,68 @@
+﻿@page "/map"
+@using WindTurbine.App.Services
+@using WindTurbine.DTOs.Turbines
+@inject IApiService ApiService
+@inject IJSRuntime JS
+
+<PageTitle>Saha Haritası</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="pa-0" Style="height: calc(100vh - 64px);">
+
+    <div style="position: absolute; top: 20px; right: 20px; z-index: 1000; width: 300px;">
+        <MudPaper Class="pa-4" Elevation="4">
+            <MudText Typo="Typo.h6" Color="Color.Primary"><b>Canlı Saha İzleme</b></MudText>
+            <MudText Typo="Typo.body2" Class="mb-2">Manisa Rüzgar Enerji Santrali</MudText>
+            <MudDivider Class="mb-2" />
+
+            <div class="d-flex align-center mb-1">
+                <MudIcon Icon="@Icons.Material.Filled.Circle" Color="Color.Success" Size="Size.Small" Class="mr-2" />
+                <MudText Typo="Typo.body2">Aktif: <b>@turbines.Count(t => t.LastStatus == "Aktif")</b></MudText>
+            </div>
+            <div class="d-flex align-center mb-1">
+                <MudIcon Icon="@Icons.Material.Filled.Circle" Color="Color.Error" Size="Size.Small" Class="mr-2" />
+                <MudText Typo="Typo.body2">Arızalı: <b>@turbines.Count(t => t.LastStatus == "Arızalı")</b></MudText>
+            </div>
+            <div class="d-flex align-center">
+                <MudIcon Icon="@Icons.Material.Filled.Circle" Color="Color.Warning" Size="Size.Small" Class="mr-2" />
+                <MudText Typo="Typo.body2">Bakımda: <b>@turbines.Count(t => t.LastStatus == "Bakımda")</b></MudText>
+            </div>
+
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" Class="mt-4" OnClick="HaritayiYenile">Yenile</MudButton>
+        </MudPaper>
+    </div>
+
+    <div id="map" style="width: 100%; height: 100%;"></div>
+
+</MudContainer>
+
+@code {
+    private List<TurbineDto> turbines = new List<TurbineDto>();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await HaritayiYenile();
+        }
+    }
+
+    private async Task HaritayiYenile()
+    {
+        // 1. Verileri Çek
+        try
+        {
+            var data = await ApiService.GetTurbinesAsync();
+            if (data != null)
+            {
+                turbines = data;
+                // 2. JS Fonksiyonunu Çağır ve Haritayı Çiz
+                await JS.InvokeVoidAsync("initMap", turbines);
+                StateHasChanged(); // Bilgi kartındaki sayıları güncelle
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Harita hatası: " + ex.Message);
+        }
+    }
+}

@@ -1,0 +1,119 @@
+﻿@page "/analytics"
+@using WindTurbine.App.Services
+@using WindTurbine.DTOs.Weather
+@inject IApiService ApiService
+
+<PageTitle>Analiz ve Tahmin</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-6 mb-6">
+
+    <div class="mb-6">
+        <MudText Typo="Typo.h4" Color="Color.Primary" Style="font-weight: 700;">AI Analiz Merkezi</MudText>
+        <MudText Typo="Typo.body1" Class="mud-text-secondary">Meteorolojik veriler ve yapay zeka destekli operasyonel öneriler.</MudText>
+    </div>
+
+    @if (forecasts == null)
+    {
+        <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-4" />
+        <MudText Align="Align.Center">Yapay Zeka verileri analiz ediyor...</MudText>
+    }
+    else
+    {
+        <MudGrid>
+            @foreach (var day in forecasts)
+            {
+                <MudItem xs="12" md="4">
+                    <MudCard Elevation="3" Class="rounded-lg hover-effect" Style="height: 100%;">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.h6" Color="Color.Primary">
+                                    @if (day.Date.Hour == DateTime.Now.Hour && day.Date.Date == DateTime.Now.Date)
+                                    {
+                                        <span style="color: #d32f2f;">ŞU AN (@day.Date.ToString("HH:00"))</span>
+                                    }
+                                    else
+                                    {
+                                        @day.Date.ToString("HH:00")
+                                    }
+                                    <MudText Typo="Typo.caption" Class="ml-2">@day.Date.ToString("dd MMM")</MudText>
+                                </MudText>
+                                <MudText Typo="Typo.subtitle2" Class="mud-text-secondary">@day.Condition</MudText>
+                            </CardHeaderContent>
+                            <CardHeaderActions>
+                                <MudIcon Icon="@GetWeatherIcon(day.Condition)" Color="Color.Warning" Size="Size.Large" />
+                            </CardHeaderActions>
+                        </MudCardHeader>
+
+                        <MudCardContent>
+                            <div class="d-flex justify-space-between align-center mb-2">
+                                <div>
+                                    <MudText Typo="Typo.caption">Rüzgar</MudText>
+                                    <MudText Typo="Typo.h5"><b>@day.WindSpeed m/s</b></MudText>
+                                </div>
+                                <div>
+                                    <MudText Typo="Typo.caption">Sıcaklık</MudText>
+                                    <MudText Typo="Typo.h5"><b>@day.Temperature °C</b></MudText>
+                                </div>
+                            </div>
+
+                            <MudDivider Class="my-3" />
+
+                            <MudAlert Severity="@GetSeverity(day.Recommendation)" Variant="Variant.Text" NoIcon="true" Class="pa-0">
+                                <MudText Typo="Typo.body2" Style="font-weight: 600;">AI YORUMU:</MudText>
+                                <MudText Typo="Typo.body2">@day.AiComment</MudText>
+                            </MudAlert>
+                        </MudCardContent>
+
+                        <MudCardActions>
+                            <MudChip T="string" Color="@GetRecommendationColor(day.Recommendation)" Size="Size.Small" Class="ml-auto">@day.Recommendation</MudChip>
+                        </MudCardActions>
+                    </MudCard>
+                </MudItem>
+            }
+        </MudGrid>
+    }
+
+</MudContainer>
+
+<style>
+    .hover-effect:hover {
+        transform: translateY(-5px);
+        transition: transform 0.3s ease;
+    }
+</style>
+
+@code {
+    private List<WeatherForecastDto> forecasts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        forecasts = await ApiService.GetWeatherForecastAsync();
+    }
+
+    private string GetWeatherIcon(string condition)
+    {
+        return condition switch
+        {
+            "Güneşli" => Icons.Material.Filled.WbSunny,
+            "Bulutlu" => Icons.Material.Filled.Cloud,
+            "Rüzgarlı" => Icons.Material.Filled.Air,
+            "Fırtınalı" => Icons.Material.Filled.Thunderstorm,
+            "Yağmurlu" => Icons.Material.Filled.WaterDrop,
+            _ => Icons.Material.Filled.WbCloudy
+        };
+    }
+
+    private Severity GetSeverity(string recommendation)
+    {
+        if (recommendation.Contains("DURDURUN")) return Severity.Error;
+        if (recommendation.Contains("Bakım")) return Severity.Warning;
+        return Severity.Info;
+    }
+
+    private Color GetRecommendationColor(string recommendation)
+    {
+        if (recommendation.Contains("DURDURUN")) return Color.Error;
+        if (recommendation.Contains("Bakım")) return Color.Warning;
+        return Color.Success;
+    }
+}   

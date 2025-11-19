@@ -76,7 +76,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        // Sayfa açılınca API'den mevcut raporları çek
+        
         try
         {
             var mevcutRaporlar = await ApiService.GetReportsAsync();
@@ -95,11 +95,11 @@
         {
             Snackbar.Add("Rapor hazırlanıyor...", Severity.Info);
 
-            // 1. Verileri Çek
+          
             var turbinler = await ApiService.GetTurbinesAsync();
             var alarmlar = await ApiService.GetAlertsAsync();
 
-            // 2. Excel Oluştur (Bellekte)
+          
             byte[] excelContent;
             using (var workbook = new XLWorkbook())
             {
@@ -123,14 +123,14 @@
                 }
             }
 
-            // 3. İndir
+        
             using (var streamRef = new DotNetStreamReference(stream: new MemoryStream(excelContent)))
             {
                 string dosyaAdi = $"Sistem_Raporu_{DateTime.Now:yyyyMMdd_HHmm}.xlsx";
                 await JS.InvokeVoidAsync("downloadFileFromStream", dosyaAdi, streamRef);
             }
 
-            // --- 4. LİSTEYE EKLE (SİZİN İSTEDİĞİNİZ KISIM) ---
+         
             var yeniRapor = new ReportDto
                 {
                     ReportId = new Random().Next(1000, 9999),
@@ -141,8 +141,8 @@
                     Status = "Hazır"
                 };
 
-            reports.Insert(0, yeniRapor); // En başa ekle
-            StateHasChanged(); // Ekranı yenile
+            reports.Insert(0, yeniRapor); 
+            StateHasChanged(); 
 
             Snackbar.Add("Rapor oluşturuldu ve listeye eklendi.", Severity.Success);
         }
@@ -158,14 +158,12 @@
 
     private async Task RaporIndir(ReportDto rapor)
     {
-        // Simülasyon: Listeden indirme
-        // Gerçekte burada API'den dosya ID'sine göre indirme yapılır.
-        // Şimdilik sadece bilgi verelim çünkü dosya sunucuda değil.
+        
         if (rapor.FileType == "Excel")
         {
-            // Demo için yeniden oluşturup indirtebiliriz veya uyarı verebiliriz
+           
             Snackbar.Add($"'{rapor.Title}' tekrar indiriliyor...", Severity.Info);
-            await YeniRaporOlusturVeIndir(); // Demo olduğu için yeniden oluşturuyoruz
+            await YeniRaporOlusturVeIndir(); 
         }
         else
         {

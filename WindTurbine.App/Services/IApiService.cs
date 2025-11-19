@@ -3,10 +3,12 @@ using WindTurbine.DTOs.Dashboard;
 using WindTurbine.DTOs.Turbines;
 using WindTurbine.DTOs.Auth;
 using WindTurbine.DTOs.Reports;
+using WindTurbine.DTOs.Weather;
 namespace WindTurbine.App.Services
 {
     public interface IApiService
     {
+        Task<List<WeatherForecastDto>> GetWeatherForecastAsync();
         Task<List<ReportDto>> GetReportsAsync();
         Task<List<TurbineDto>> GetTurbinesAsync();
         Task<List<AlertDto>> GetAlertsAsync();
