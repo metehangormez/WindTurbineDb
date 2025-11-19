@@ -15,18 +15,16 @@ namespace WindTurbine.Entities
         public string Model { get; set; }
         public double Latitude { get; set; } // Haritada göstermek için
         public double Longitude { get; set; }
+        public double CurrentPower { get; set; } = 0; // Anlık Güç (kW/MW)
+        public double CurrentWindSpeed { get; set; } = 0; // Rüzgar Hızı (m/s)
+        public string LastStatus { get; set; } = "Bilinmiyor";
 
-        // --- İlişkiler ---
-
-        // Foreign Key (Yabancı Anahtar)
         public int WindFarmId { get; set; }
 
-        // Navigation Property: 
-        // Bu türbinin ait olduğu tek bir Rüzgar Santrali vardır.
+       
         public WindFarm WindFarm { get; set; }
 
-        // Navigation Property: 
-        // Bir Türbinin birden fazla Alarmı olabilir.
+       
         public ICollection<Alert> Alerts { get; set; }
     }
 }

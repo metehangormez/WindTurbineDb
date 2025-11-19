@@ -13,6 +13,8 @@ builder.Services.AddScoped<IAlertRepository, EfAlertRepository>();
 builder.Services.AddScoped<IWindFarmService, WindFarmManager>();
 builder.Services.AddScoped<IWindFarmRepository, EfWindFarmRepository>();
 
+builder.Services.AddScoped<IUserRepository, EfUserRepository>();
+builder.Services.AddScoped<IAuthService, AuthManager>();
 builder.Services.AddScoped<ITurbineService, TurbineManager>();
 builder.Services.AddScoped<ITurbineRepository, EfTurbineRepository>();
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");

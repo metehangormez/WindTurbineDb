@@ -1,0 +1,25 @@
+﻿@using WindTurbine.DTOs.Turbines
+@using MudBlazor
+
+<MudDialog>
+    <DialogContent>
+        <MudTextField @bind-Value="Model.Name" Label="Türbin Adı" Variant="Variant.Outlined" Class="mb-4" />
+        <MudTextField @bind-Value="Model.Model" Label="Model (Örn: Siemens SWT-3.0)" Variant="Variant.Outlined" Class="mb-4" />
+        <MudNumericField @bind-Value="Model.WindFarmId" Label="Bağlı Olduğu Saha ID" Variant="Variant.Outlined" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">İptal</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Kaydet</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    // Bu parametreyi dışarıdan alacağız.
+    // Eğer boş gelirse "Ekleme", dolu gelirse "Düzenleme" modundayız demektir.
+    [Parameter] public TurbineDto Model { get; set; } = new TurbineDto();
+
+    void Submit() => MudDialog.Close(DialogResult.Ok(Model));
+    void Cancel() => MudDialog.Cancel();
+}

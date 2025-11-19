@@ -7,8 +7,9 @@ namespace WindTurbine.Business.Abstract
     {
  
         Turbine CreateTurbine(TurbineCreateDto turbineDto);
+        void UpdateTurbine(TurbineDto turbineDto);
+        void DeleteTurbine(int id);
 
-       
         List<TurbineDto> GetAllTurbines();
     }
 }

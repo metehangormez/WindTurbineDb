@@ -1,0 +1,155 @@
+﻿@page "/reports"
+@using WindTurbine.App.Services
+@using WindTurbine.DTOs.Reports
+@using WindTurbine.DTOs.Turbines
+@using WindTurbine.DTOs.Alerts
+@using ClosedXML.Excel
+@using System.IO
+@inject IApiService ApiService
+@inject ISnackbar Snackbar
+@inject IJSRuntime JS
+
+<PageTitle>Raporlar</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-6 mb-6">
+
+    <div class="d-flex justify-content-between align-items-center mb-6">
+        <div>
+            <MudText Typo="Typo.h5" Color="Color.Primary" Style="font-weight: 700;">Rapor Merkezi</MudText>
+            <MudText Typo="Typo.body2" Class="mud-text-secondary">Sistem performans ve arıza raporları</MudText>
+        </div>
+        <MudButton Variant="Variant.Filled"
+                   StartIcon="@Icons.Material.Filled.PostAdd"
+                   Color="Color.Primary"
+                   OnClick="YeniRaporOlusturVeIndir"
+                   Disabled="@yukleniyor">
+            @(yukleniyor ? "Oluşturuluyor..." : "Anlık Sistem Raporu Oluştur (Excel)")
+        </MudButton>
+    </div>
+
+    <MudTable Items="@reports" Hover="true" Elevation="3" Class="rounded-lg">
+        <HeaderContent>
+            <MudTh>Dosya Tipi</MudTh>
+            <MudTh>Rapor Adı</MudTh>
+            <MudTh>Tarih</MudTh>
+            <MudTh>Durum</MudTh>
+            <MudTh Style="text-align:right">İşlem</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Tip">
+                <MudIcon Icon="@Icons.Material.Filled.TableView" Color="Color.Success" Size="Size.Medium" />
+            </MudTd>
+            <MudTd DataLabel="Ad">@context.Title</MudTd>
+            <MudTd DataLabel="Tarih">@context.GeneratedDate.ToString("dd.MM.yyyy")</MudTd>
+            <MudTd DataLabel="Durum"><MudChip T="string" Color="Color.Default" Size="Size.Small">Arşiv</MudChip></MudTd>
+            <MudTd DataLabel="İşlem" Style="text-align:right">
+                <MudButton Variant="Variant.Outlined" Size="Size.Small" Disabled="true">Arşivden İndir</MudButton>
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+
+</MudContainer>
+
+@code {
+    private List<ReportDto> reports = new List<ReportDto>();
+    private bool yukleniyor = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Arşivdeki eski raporları listele (Simülasyon)
+        try { reports = await ApiService.GetReportsAsync(); } catch { }
+    }
+
+    // --- GERÇEK EXCEL OLUŞTURMA FONKSİYONU ---
+    private async Task YeniRaporOlusturVeIndir()
+    {
+        yukleniyor = true;
+        try
+        {
+            Snackbar.Add("Veriler çekiliyor ve rapor hazırlanıyor...", Severity.Info);
+
+            // 1. API'den GERÇEK Verileri Çek
+            var turbinler = await ApiService.GetTurbinesAsync();
+            var alarmlar = await ApiService.GetAlertsAsync();
+
+            // 2. Excel Dosyasını Oluştur (ClosedXML)
+            using (var workbook = new XLWorkbook())
+            {
+                // SAYFA 1: Türbin Durumları
+                var ws1 = workbook.Worksheets.Add("Türbin Durumları");
+                ws1.Cell(1, 1).Value = "TÜRBİN RAPORU - " + DateTime.Now.ToString();
+                ws1.Range(1, 1, 1, 5).Merge().Style.Font.Bold = true;
+
+                // Başlıklar
+                ws1.Cell(3, 1).Value = "ID";
+                ws1.Cell(3, 2).Value = "Adı";
+                ws1.Cell(3, 3).Value = "Model";
+                ws1.Cell(3, 4).Value = "Son Durum";
+                ws1.Cell(3, 5).Value = "Anlık Güç (kW)";
+                ws1.Cell(3, 6).Value = "Rüzgar (m/s)";
+                ws1.Range(3, 1, 3, 6).Style.Font.Bold = true;
+                ws1.Range(3, 1, 3, 6).Style.Fill.BackgroundColor = XLColor.LightGray;
+
+                // Verileri Yaz
+                int row = 4;
+                foreach (var t in turbinler)
+                {
+                    ws1.Cell(row, 1).Value = t.TurbineId;
+                    ws1.Cell(row, 2).Value = t.Name;
+                    ws1.Cell(row, 3).Value = t.Model;
+                    ws1.Cell(row, 4).Value = t.LastStatus;
+                    ws1.Cell(row, 5).Value = t.CurrentPower;
+                    ws1.Cell(row, 6).Value = t.CurrentWindSpeed;
+
+                    // Arızalıysa kırmızı yap
+                    if (t.LastStatus == "Arızalı")
+                        ws1.Range(row, 1, row, 6).Style.Font.FontColor = XLColor.Red;
+
+                    row++;
+                }
+                ws1.Columns().AdjustToContents(); // Sütunları genişlet
+
+                // SAYFA 2: Alarm Geçmişi
+                var ws2 = workbook.Worksheets.Add("Son Alarmlar");
+                ws2.Cell(1, 1).Value = "ALARM GEÇMİŞİ";
+
+                ws2.Cell(2, 1).Value = "Zaman";
+                ws2.Cell(2, 2).Value = "Mesaj";
+                ws2.Cell(2, 3).Value = "Seviye";
+                ws2.Cell(2, 4).Value = "Türbin ID";
+                ws2.Range(2, 1, 2, 4).Style.Font.Bold = true;
+
+                row = 3;
+                foreach (var a in alarmlar)
+                {
+                    ws2.Cell(row, 1).Value = a.Timestamp.ToLocalTime().ToString();
+                    ws2.Cell(row, 2).Value = a.Message;
+                    ws2.Cell(row, 3).Value = a.Severity;
+                    ws2.Cell(row, 4).Value = a.TurbineId;
+                    row++;
+                }
+                ws2.Columns().AdjustToContents();
+
+                // 3. İndirme İşlemi
+                using (var stream = new MemoryStream())
+                {
+                    workbook.SaveAs(stream);
+                    var content = stream.ToArray();
+                    using var streamRef = new DotNetStreamReference(stream: new MemoryStream(content));
+
+                    string dosyaAdi = $"Sistem_Raporu_{DateTime.Now:yyyyMMdd_HHmm}.xlsx";
+                    await JS.InvokeVoidAsync("downloadFileFromStream", dosyaAdi, streamRef);
+                }
+            }
+            Snackbar.Add("Rapor başarıyla indirildi.", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Rapor hatası: " + ex.Message, Severity.Error);
+        }
+        finally
+        {
+            yukleniyor = false;
+        }
+    }
+}

@@ -9,6 +9,19 @@ namespace WindTurbineDb.Controllers
     [ApiController]
     public class TurbinesController : ControllerBase
     {
+        [HttpPut]
+        public IActionResult Update([FromBody] TurbineDto turbineDto)
+        {
+            _turbineService.UpdateTurbine(turbineDto);
+            return Ok();
+        }
+
+        [HttpDelete("{id}")]
+        public IActionResult Delete(int id)
+        {
+            _turbineService.DeleteTurbine(id);
+            return Ok();
+        }
         private readonly ITurbineService _turbineService;
         public TurbinesController(ITurbineService turbineService) { _turbineService = turbineService; }
 

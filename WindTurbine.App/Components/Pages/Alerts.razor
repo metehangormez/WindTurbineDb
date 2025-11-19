@@ -1,0 +1,247 @@
+﻿@page "/alerts"
+@using WindTurbine.App.Services
+@using WindTurbine.DTOs.Alerts
+@using ClosedXML.Excel
+@using System.IO
+@inject IApiService ApiService
+@inject ISnackbar Snackbar
+@inject IJSRuntime JS
+
+<PageTitle>Alarm Geçmişi</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-6 mb-6">
+
+    <div class="d-flex justify-content-between align-items-center mb-6">
+        <div>
+            <MudText Typo="Typo.h5" Color="Color.Primary" Style="font-weight: 700;">Alarm Yönetimi</MudText>
+            <MudText Typo="Typo.body2" Class="mud-text-secondary">Tüm sistem uyarıları ve olay geçmişi</MudText>
+        </div>
+        <div class="d-flex gap-2">
+            <MudButton Variant="Variant.Outlined"
+                       StartIcon="@Icons.Material.Filled.FileDownload"
+                       Color="Color.Success"
+                       OnClick="ExcelIndir">Excel İndir</MudButton>
+
+            <MudButton Variant="Variant.Filled"
+                       StartIcon="@Icons.Material.Filled.Refresh"
+                       Color="Color.Primary"
+                       OnClick="VerileriYukle">Yenile</MudButton>
+        </div>
+    </div>
+
+    <MudTable Items="@alerts"
+              Dense="true"
+              Hover="true"
+              Bordered="false"
+              Striped="true"
+              Filter="new Func<AlertDto,bool>(FilterFunc)"
+              Loading="@yukleniyor"
+              Elevation="3"
+              Class="rounded-lg"
+              RowsPerPage="15">
+
+        <ToolBarContent>
+            <MudText Typo="Typo.h6" Class="mt-1">Olay Kayıtları</MudText>
+            <MudSpacer />
+            <MudTextField @bind-Value="searchString" Placeholder="Ara (Mesaj, Durum...)" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+        </ToolBarContent>
+
+        <HeaderContent>
+            <MudTh><MudTableSortLabel SortBy="new Func<AlertDto, object>(x=>x.AlertId)">ID</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<AlertDto, object>(x=>x.Timestamp)">Zaman</MudTableSortLabel></MudTh>
+            <MudTh>Mesaj</MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<AlertDto, object>(x=>x.Severity)">Seviye</MudTableSortLabel></MudTh>
+            <MudTh>Güven Skoru</MudTh>
+            <MudTh>Durum</MudTh>
+            <MudTh>İşlemler</MudTh>
+        </HeaderContent>
+
+        <RowTemplate>
+            <MudTd DataLabel="ID">@context.AlertId</MudTd>
+
+            <MudTd DataLabel="Zaman">
+                <div class="d-flex flex-column">
+                    <MudText Typo="Typo.body2" Style="font-weight:bold;">@context.Timestamp.ToLocalTime().ToString("dd.MM.yyyy")</MudText>
+                    <MudText Typo="Typo.caption">@context.Timestamp.ToLocalTime().ToString("HH:mm:ss")</MudText>
+                </div>
+            </MudTd>
+
+            <MudTd DataLabel="Mesaj">
+                <MudText Typo="Typo.body2" Style="font-weight: 500;">@context.Message</MudText>
+                <MudText Typo="Typo.caption" Class="mud-text-secondary">Türbin ID: @context.TurbineId</MudText>
+            </MudTd>
+
+            <MudTd DataLabel="Seviye">
+                @if (context.Severity >= 3)
+                {
+                    <MudChip T="string" Color="Color.Error" Size="Size.Small" Icon="@Icons.Material.Filled.Report">KRİTİK</MudChip>
+                }
+                else if (context.Severity == 2)
+                {
+                    <MudChip T="string" Color="Color.Warning" Size="Size.Small" Icon="@Icons.Material.Filled.Warning">ORTA</MudChip>
+                }
+                else
+                {
+                    <MudChip T="string" Color="Color.Info" Size="Size.Small" Icon="@Icons.Material.Filled.Info">DÜŞÜK</MudChip>
+                }
+            </MudTd>
+
+            <MudTd DataLabel="Güven">
+                <div class="d-flex align-center">
+                    <MudProgressLinear Color="@(context.Confidence > 0.8 ? Color.Success : Color.Warning)" Value="@((double)(context.Confidence * 100))" Class="mr-2" Style="width: 60px;" />
+                    <MudText Typo="Typo.caption">@((context.Confidence * 100).ToString("F0"))%</MudText>
+                </div>
+            </MudTd>
+
+            <MudTd DataLabel="Durum">
+                @if (context.Status == "Yeni")
+                {
+                    <MudChip T="string" Color="Color.Error" Variant="Variant.Text" Size="Size.Small">YENİ</MudChip>
+                }
+                else if (context.Status == "Onaylandı" || context.Status == "Çözüldü")
+                {
+                    <MudChip T="string" Color="Color.Success" Variant="Variant.Text" Size="Size.Small">ÇÖZÜLDÜ</MudChip>
+                }
+                else
+                {
+                    <MudText Typo="Typo.body2">@context.Status</MudText>
+                }
+            </MudTd>
+
+            <MudTd DataLabel="İşlemler">
+                <MudIconButton Icon="@Icons.Material.Filled.CheckCircle"
+                               Color="Color.Success"
+                               Size="Size.Small"
+                               Title="Çözüldü Olarak İşaretle"
+                               Disabled="@(context.Status == "Çözüldü")"
+                               OnClick="@(() => AlarmCozuldu(context))" />
+
+                <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                               Color="Color.Default"
+                               Size="Size.Small"
+                               OnClick="@(() => AlarmSil(context))" />
+            </MudTd>
+        </RowTemplate>
+
+        <PagerContent>
+            <MudTablePager RowsPerPageString="Sayfa başına kayıt:" />
+        </PagerContent>
+    </MudTable>
+
+</MudContainer>
+
+@code {
+    private List<AlertDto> alerts = new List<AlertDto>();
+    private bool yukleniyor = true;
+    private string searchString = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await VerileriYukle();
+    }
+
+    private async Task VerileriYukle()
+    {
+        yukleniyor = true;
+        try
+        {
+            var veri = await ApiService.GetAlertsAsync();
+            if (veri != null)
+            {
+                alerts = veri.OrderByDescending(x => x.Timestamp).ToList();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Veri hatası: " + ex.Message, Severity.Error);
+        }
+        finally
+        {
+            yukleniyor = false;
+        }
+    }
+
+    // --- EXCEL İNDİRME FONKSİYONU ---
+    private async Task ExcelIndir()
+    {
+        try
+        {
+            using (var workbook = new XLWorkbook())
+            {
+                var worksheet = workbook.Worksheets.Add("Alarmlar");
+
+                // Başlıklar
+                worksheet.Cell(1, 1).Value = "ID";
+                worksheet.Cell(1, 2).Value = "Zaman";
+                worksheet.Cell(1, 3).Value = "Mesaj";
+                worksheet.Cell(1, 4).Value = "Seviye";
+                worksheet.Cell(1, 5).Value = "Durum";
+                worksheet.Cell(1, 6).Value = "Güven Skoru";
+
+                // Veriler
+                for (int i = 0; i < alerts.Count; i++)
+                {
+                    var alert = alerts[i];
+                    worksheet.Cell(i + 2, 1).Value = alert.AlertId;
+                    worksheet.Cell(i + 2, 2).Value = alert.Timestamp.ToLocalTime().ToString();
+                    worksheet.Cell(i + 2, 3).Value = alert.Message;
+                    worksheet.Cell(i + 2, 4).Value = alert.Severity;
+                    worksheet.Cell(i + 2, 5).Value = alert.Status;
+                    worksheet.Cell(i + 2, 6).Value = alert.Confidence;
+                }
+
+                // Dosyayı MemoryStream'e kaydet
+                using (var stream = new MemoryStream())
+                {
+                    workbook.SaveAs(stream);
+                    var content = stream.ToArray();
+
+                    // JS ile indir
+                    using var streamRef = new DotNetStreamReference(stream: new MemoryStream(content));
+                    await JS.InvokeVoidAsync("downloadFileFromStream", "Alarmlar_Raporu.xlsx", streamRef);
+                }
+            }
+            Snackbar.Add("Excel dosyası indirildi!", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Excel hatası: " + ex.Message, Severity.Error);
+        }
+    }
+
+    // --- SİLME FONKSİYONU ---
+    private async Task AlarmSil(AlertDto item)
+    {
+        // Buraya bir onay kutusu (Dialog) eklenebilir
+        // Şimdilik direkt siliyoruz (API'de Delete metodu varsa)
+        // Eğer API'de DeleteAlert yoksa, hata verecektir.
+        // (Turbine silme örneğindeki gibi DeleteAlertAsync yazmanız gerekebilir)
+
+        // Örnek: await ApiService.DeleteAlertAsync(item.AlertId);
+
+        // Şimdilik sadece listeden silelim (Demo)
+        alerts.Remove(item);
+        Snackbar.Add("Alarm silindi (Demo)", Severity.Info);
+    }
+
+    // --- ÇÖZÜLDÜ İŞARETLEME FONKSİYONU ---
+    private async Task AlarmCozuldu(AlertDto item)
+    {
+        // Durumu güncelle
+        item.Status = "Çözüldü";
+
+        // API'ye gönder (Update metodu varsa)
+        // await ApiService.UpdateAlertAsync(item);
+
+        Snackbar.Add("Alarm çözüldü olarak işaretlendi!", Severity.Success);
+    }
+
+    private bool FilterFunc(AlertDto element)
+    {
+        if (string.IsNullOrWhiteSpace(searchString)) return true;
+        if (element.Message.Contains(searchString, StringComparison.OrdinalIgnoreCase)) return true;
+        if (element.Status.Contains(searchString, StringComparison.OrdinalIgnoreCase)) return true;
+        if ($"{element.TurbineId}".Contains(searchString)) return true;
+        return false;
+    }
+}

@@ -1,0 +1,161 @@
+﻿@page "/turbines"
+@using WindTurbine.App.Services
+@using WindTurbine.DTOs.Turbines
+@inject IApiService ApiService
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
+<PageTitle>Türbin Listesi</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-6 mb-6">
+
+    <div class="d-flex justify-content-between align-items-center mb-6">
+        <div>
+            <MudText Typo="Typo.h5" Style="font-weight: 700; color: #2c3e50;">Türbin Listesi</MudText>
+            <MudText Typo="Typo.body2" Class="mud-text-secondary">Gerçek zamanlı SCADA verileri</MudText>
+        </div>
+        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" Color="Color.Secondary" OnClick="OpenAddDialog">Yeni Türbin Ekle</MudButton>
+    </div>
+
+    <MudTable Items="@turbines" 
+              Dense="true" 
+              Hover="true" 
+              Striped="true" 
+              Filter="new Func<TurbineDto,bool>(FilterFunc)" 
+              Loading="@yukleniyor"
+              Elevation="0"
+              Class="border-solid border-1 mud-border-lines-default rounded-lg">
+
+        <ToolBarContent>
+            <MudTextField @bind-Value="searchString" Placeholder="Ara..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+        </ToolBarContent>
+
+        <HeaderContent>
+            <MudTh>DURUM</MudTh>
+            <MudTh>TÜRBİN ADI</MudTh>
+            <MudTh>MODEL</MudTh>
+            <MudTh>ANLIK GÜÇ</MudTh>
+            <MudTh>RÜZGAR HIZI</MudTh>
+            <MudTh>İŞLEMLER</MudTh>
+        </HeaderContent>
+
+        <RowTemplate>
+            <MudTd DataLabel="Durum">
+                @if (context.LastStatus == "Aktif" || context.LastStatus == "Normal" || context.LastStatus == "1")
+                {
+                        <MudChip T="string" Color="Color.Success" Size="Size.Small" Icon="@Icons.Material.Filled.CheckCircle">AKTİF</MudChip>
+                }
+                else if (context.LastStatus == "Arızalı" || context.LastStatus == "5")
+                {
+                        <MudChip T="string" Color="Color.Error" Size="Size.Small" Icon="@Icons.Material.Filled.Error">ARIZALI</MudChip>
+                }
+                else
+                {
+                        <MudChip T="string" Color="Color.Warning" Size="Size.Small" Icon="@Icons.Material.Filled.Build">@context.LastStatus?.ToUpper()</MudChip>
+                }
+            </MudTd>
+
+            <MudTd DataLabel="Türbin Adı" Style="font-weight:600;">@context.Name</MudTd>
+            <MudTd DataLabel="Model">@context.Model</MudTd>
+            <MudTd DataLabel="Güç">@context.CurrentPower.ToString("F2") kW</MudTd>
+            <MudTd DataLabel="Rüzgar">@context.CurrentWindSpeed.ToString("F1") m/s</MudTd>
+
+            <MudTd DataLabel="İşlemler">
+                <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Size="Size.Small" OnClick="@(() => OpenEditDialog(context))" />
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteTurbine(context))" />
+            </MudTd>
+        </RowTemplate>
+
+        <PagerContent>
+            <MudTablePager />
+        </PagerContent>
+    </MudTable>
+
+</MudContainer>
+
+@code {
+    private List<TurbineDto> turbines = new List<TurbineDto>();
+    private bool yukleniyor = true;
+    private string searchString = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var timer = new System.Timers.Timer(2000);
+        timer.Elapsed += async (sender, e) => await InvokeAsync(VerileriYukle);
+        timer.Start();
+        await VerileriYukle();
+    }
+
+    private async Task VerileriYukle()
+    {
+        if (turbines.Count == 0) yukleniyor = true;
+        try
+        {
+            var data = await ApiService.GetTurbinesAsync();
+            if (data != null) { turbines = data; StateHasChanged(); }
+        }
+        catch { }
+        finally { yukleniyor = false; }
+    }
+
+    // --- YENİ EKLEME FONKSİYONU ---
+    private async Task OpenAddDialog()
+    {
+        var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+        var dialog = DialogService.Show<TurbineDialog>("Yeni Türbin Ekle", options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            var yeniData = (TurbineDto)result.Data;
+            // DTO dönüşümü (CreateDto'ya çevirip göndermek lazım)
+            var createDto = new TurbineCreateDto
+                {
+                    Name = yeniData.Name,
+                    Model = yeniData.Model,
+                    WindFarmId = yeniData.WindFarmId
+                };
+
+            var basarili = await ApiService.AddTurbineAsync(createDto);
+            if (basarili) { Snackbar.Add("Türbin Eklendi!", Severity.Success); await VerileriYukle(); }
+            else Snackbar.Add("Hata oluştu.", Severity.Error);
+        }
+    }
+
+    // --- DÜZENLEME FONKSİYONU ---
+    private async Task OpenEditDialog(TurbineDto item)
+    {
+        var parameters = new DialogParameters { ["Model"] = item }; // Mevcut veriyi gönder
+        var dialog = DialogService.Show<TurbineDialog>("Türbin Düzenle", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            var guncelData = (TurbineDto)result.Data;
+            var basarili = await ApiService.UpdateTurbineAsync(guncelData);
+            if (basarili) { Snackbar.Add("Güncellendi!", Severity.Success); await VerileriYukle(); }
+        }
+    }
+
+    // --- SİLME FONKSİYONU ---
+    private async Task DeleteTurbine(TurbineDto item)
+    {
+        bool? result = await DialogService.ShowMessageBox(
+            "Sil?",
+            $"{item.Name} adlı türbini silmek istediğinize emin misiniz?",
+            yesText: "Sil", cancelText: "İptal");
+
+        if (result == true)
+        {
+            var basarili = await ApiService.DeleteTurbineAsync(item.TurbineId);
+            if (basarili) { Snackbar.Add("Silindi!", Severity.Success); await VerileriYukle(); }
+        }
+    }
+
+    private bool FilterFunc(TurbineDto element)
+    {
+        if (string.IsNullOrWhiteSpace(searchString)) return true;
+        if (element.Name != null && element.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase)) return true;
+        return false;
+    }
+}

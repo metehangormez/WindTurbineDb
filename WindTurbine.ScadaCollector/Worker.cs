@@ -1,6 +1,7 @@
 using WindTurbine.Business.Abstract;
+using WindTurbine.DataAccess.Context; 
+using WindTurbine.Entities; 
 using WindTurbine.DTOs.Alerts;
-using System.Text;
 
 namespace WindTurbine.ScadaCollector
 {
@@ -20,60 +21,71 @@ namespace WindTurbine.ScadaCollector
         {
             string csvFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, CSV_FILE_NAME);
 
-            if (!File.Exists(csvFilePath))
-            {
-                _logger.LogError($"DOSYA BULUNAMADI: {csvFilePath}");
-                return;
-            }
-
-            _logger.LogInformation($"--- SCADA SÝMÜLASYONU BAÞLADI: {CSV_FILE_NAME} ---");
+            if (!File.Exists(csvFilePath)) { _logger.LogError("Dosya yok!"); return; }
 
             using var reader = new StreamReader(csvFilePath);
-            string? headerLine = await reader.ReadLineAsync(); 
+            string? headerLine = await reader.ReadLineAsync();
+            var headers = headerLine?.Split(';');
 
-            int satirSayaci = 0; 
+            // Sütun Ýndekslerini Bul
+            int statusIndex = Array.IndexOf(headers, "status_type_id");
+            int powerIndex = Array.IndexOf(headers, "power_29_avg"); 
+            int windIndex = Array.IndexOf(headers, "wind_speed_3_avg"); 
+            int timeIndex = Array.IndexOf(headers, "time_stamp");
+
+            _logger.LogInformation("SCADA Veri Akýþý Baþlýyor...");
 
             while (!stoppingToken.IsCancellationRequested && !reader.EndOfStream)
             {
                 var line = await reader.ReadLineAsync();
                 if (string.IsNullOrWhiteSpace(line)) continue;
+                var values = line.Split(';');
 
-                satirSayaci++; 
-
-               
-                bool sahteAnomaliVar = (satirSayaci % 100 == 0);
-
-                if (sahteAnomaliVar)
+                using (var scope = _serviceScopeFactory.CreateScope())
                 {
-                    _logger.LogWarning($"!!! TEST ANOMALÝSÝ ÜRETÝLDÝ !!! (Satýr: {satirSayaci})");
+                    
+                    var dbContext = scope.ServiceProvider.GetRequiredService<WindTurbineDbContext>();
+                    var alertService = scope.ServiceProvider.GetRequiredService<IAlertService>();
 
-                    // Veritabanýna Kaydet
-                    using (var scope = _serviceScopeFactory.CreateScope())
+                   
+                    string statusStr = values[statusIndex];
+                    double power = double.Parse(values[powerIndex].Replace('.', ',')); 
+                    double wind = double.Parse(values[windIndex].Replace('.', ','));
+
+                    
+                    string statusText = (statusStr == "5") ? "Arýzalý" : "Aktif";
+                    if (statusStr == "4") statusText = "Bakýmda";
+
+                    
+                    var turbine = dbContext.Turbines.FirstOrDefault(t => t.TurbineId == 1);
+                    if (turbine != null)
                     {
-                        var alertService = scope.ServiceProvider.GetRequiredService<IAlertService>();
-                        try
-                        {
-                            alertService.CreateAlert(new AlertCreateDto
-                            {
-                                Timestamp = DateTime.UtcNow,
-                                Message = $"SCADA Test Anomalisi (Satýr: {satirSayaci})",
-                                Severity = 2,
-                                Confidence = 0.85,
-                                Status = "Yeni",
-                                TurbineId = 1
-                            });
-                            _logger.LogInformation("-> DB'ye yazýldý.");
-                        }
-                        catch (Exception ex) { _logger.LogError(ex.Message); }
+                        turbine.CurrentPower = power;
+                        turbine.CurrentWindSpeed = wind;
+                        turbine.LastStatus = statusText;
+
+                        dbContext.SaveChanges(); 
+                       
                     }
 
                     
-                    await Task.Delay(2000000, stoppingToken);
+                    if (statusStr == "5")
+                    {
+                        alertService.CreateAlert(new AlertCreateDto
+                        {
+                            Timestamp = DateTime.UtcNow,
+                            Message = $"KRÝTÝK ARIZA (Kod: 5)",
+                            Severity = 3,
+                            Status = "Yeni",
+                            TurbineId = 1
+                        });
+                        _logger.LogWarning("!!! ALARM OLUÞTURULDU !!!");
+                        await Task.Delay(200000, stoppingToken); 
+                    }
                 }
-                else
-                {
-                   
-                }
+
+               
+                await Task.Delay(100000, stoppingToken);
             }
         }
     }

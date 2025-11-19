@@ -1,14 +1,16 @@
 ﻿@page "/"
 @layout WindTurbine.App.Components.Layout.AuthLayout
 @using WindTurbine.DTOs.Auth
+@using WindTurbine.App.Services  
 @using System.ComponentModel.DataAnnotations
 @inject NavigationManager NavManager
 @inject ISnackbar Snackbar
+@inject IApiService ApiService 
 
 <PageTitle>Giriş Yap</PageTitle>
 
 <MudGrid Class="h-100" Spacing="0">
-    <MudItem xs="12" md="6" Class="d-none d-md-flex align-center justify-center"
+    <MudItem xs="12" md="6" Class="d-none d-md-flex align-center justify-center" 
              Style="background: linear-gradient(135deg, #0d47a1 0%, #1565c0 100%); height: 100vh;">
         <div class="d-flex flex-column align-center text-center px-4">
             <MudIcon Icon="@Icons.Material.Filled.WindPower" Style="font-size: 8rem; color: rgba(255,255,255,0.9);" />
@@ -23,39 +25,37 @@
             <MudText Typo="Typo.body1" Class="mud-text-secondary mb-8">Hesabınıza giriş yapın</MudText>
 
             <MudForm @ref="form" @bind-IsValid="@success">
-
-                <MudTextField T="string"
-                              Label="E-Posta"
-                              Variant="Variant.Outlined"
-                              @bind-Value="email"
+                <MudTextField T="string" 
+                              Label="E-Posta" 
+                              Variant="Variant.Outlined" 
+                              @bind-Value="loginDto.Email"
                               Required="true"
                               RequiredError="E-posta gereklidir!"
-                              Validation="@(new Func<string, IEnumerable<string>>(EmailDogrula))"
-                              Adornment="Adornment.Start"
-                              AdornmentIcon="@Icons.Material.Filled.Email"
-                              Class="mb-4" />
+                              Adornment="Adornment.Start" 
+                              AdornmentIcon="@Icons.Material.Filled.Email" 
+                              Class="mb-4"/>
 
                 <MudTextField T="string"
-                              Label="Şifre"
-                              Variant="Variant.Outlined"
-                              @bind-Value="password"
+                              Label="Şifre" 
+                              Variant="Variant.Outlined" 
+                              @bind-Value="loginDto.Password"
                               InputType="InputType.Password"
                               Required="true"
                               RequiredError="Şifre gereklidir!"
-                              Adornment="Adornment.Start"
-                              AdornmentIcon="@Icons.Material.Filled.Lock"
-                              Class="mb-2" />
+                              Adornment="Adornment.Start" 
+                              AdornmentIcon="@Icons.Material.Filled.Lock" 
+                              Class="mb-2"/>
 
                 <div class="d-flex justify-space-between align-center mb-6">
                     <MudCheckBox T="bool" Label="Beni Hatırla" Color="Color.Primary" Dense="true" />
                     <MudLink Href="#" Underline="Underline.None" Color="Color.Primary" Typo="Typo.body2">Şifremi Unuttum?</MudLink>
                 </div>
 
-                <MudButton Variant="Variant.Filled"
-                           Color="Color.Primary"
-                           Size="Size.Large"
-                           FullWidth="true"
-                           OnClick="GirisYap"
+                <MudButton Variant="Variant.Filled" 
+                           Color="Color.Primary" 
+                           Size="Size.Large" 
+                           FullWidth="true" 
+                           OnClick="GirisYap" 
                            Class="mb-6 py-3"
                            Disabled="@(!success)"
                            Style="font-weight: bold;">GİRİŞ YAP</MudButton>
@@ -71,25 +71,25 @@
 @code {
     bool success;
     MudForm form;
-    string email;
-    string password;
+    UserLoginDto loginDto = new UserLoginDto();
 
-    // E-Posta Format Kontrolü (Regex)
-    private IEnumerable<string> EmailDogrula(string ch)
-    {
-        if (!string.IsNullOrEmpty(ch) && !System.Text.RegularExpressions.Regex.IsMatch(ch, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
-            yield return "Geçerli bir e-posta adresi giriniz.";
-    }
-
-    private void GirisYap()
+    private async Task GirisYap()
     {
         form.Validate();
         if (success)
         {
-            // TODO: Burada API'ye istek atılacak.
-            // Şimdilik başarılı sayıp Dashboard'a yönlendiriyoruz.
-            Snackbar.Add("Giriş Başarılı!", Severity.Success);
-            NavManager.NavigateTo("/dashboard");
+            // API'ye gerçek giriş isteği gönderiyoruz
+            var sonuc = await ApiService.LoginAsync(loginDto);
+
+            if (sonuc)
+            {
+                Snackbar.Add("Giriş Başarılı!", Severity.Success);
+                NavManager.NavigateTo("/dashboard");
+            }
+            else
+            {
+                Snackbar.Add("E-posta veya şifre hatalı!", Severity.Error);
+            }
         }
     }
 }
