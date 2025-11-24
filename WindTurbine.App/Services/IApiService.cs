@@ -4,6 +4,7 @@ using WindTurbine.DTOs.Turbines;
 using WindTurbine.DTOs.Auth;
 using WindTurbine.DTOs.Reports;
 using WindTurbine.DTOs.Weather;
+using WindTurbine.DTOs.Turbine;
 
 namespace WindTurbine.App.Services
 {
@@ -19,6 +20,8 @@ namespace WindTurbine.App.Services
         Task<bool> DeleteTurbineAsync(int id);
         Task<bool> RegisterAsync(UserRegisterDto dto);
         Task<bool> LoginAsync(UserLoginDto dto);
-        Task<DashboardDto> GetDashboardAsync(); 
+        Task<DashboardDto> GetDashboardAsync();
+        Task<TurbineHealthDto?> GetTurbineHealthAsync(int turbineId);
+
     }
 }

@@ -1,7 +1,5 @@
 ﻿@inherits LayoutComponentBase
 @using MudBlazor
-@using WindTurbine.App.Services
-@inject UserSession UserSession
 
 <MudThemeProvider Theme="_customTheme" />
 <MudDialogProvider />
@@ -15,15 +13,13 @@
 
         <MudIconButton Icon="@Icons.Material.Filled.NotificationsNone" Color="Color.Inherit" Title="Bildirim Yok" />
 
-        <MudAvatar Color="Color.Primary" Size="Size.Small" Class="ml-3" Style="font-size: 0.8rem;">
-            @(string.IsNullOrEmpty(UserSession.FullName) ? "M" : UserSession.FullName.Substring(0, 1).ToUpper())
-        </MudAvatar>
+        <MudAvatar Color="Color.Primary" Size="Size.Small" Class="ml-3" Style="font-size: 0.8rem;">AD</MudAvatar>
     </MudAppBar>
 
-    <MudDrawer @bind-Open="_drawerOpen" 
-               ClipMode="DrawerClipMode.Always" 
-               Elevation="0" 
-               Variant="@DrawerVariant.Responsive" 
+    <MudDrawer @bind-Open="_drawerOpen"
+               ClipMode="DrawerClipMode.Always"
+               Elevation="0"
+               Variant="@DrawerVariant.Responsive"
                Width="260px"
                Style="background-color: #0d47a1; color: white;">
 
@@ -34,11 +30,15 @@
 
                 <MudNavLink Href="/dashboard" Icon="@Icons.Material.Filled.Dashboard" IconColor="Color.Inherit" Class="nav-item-custom">Ana Sayfa</MudNavLink>
                 <MudNavLink Href="/turbines" Icon="@Icons.Material.Filled.WindPower" IconColor="Color.Inherit" Class="nav-item-custom">Türbinler</MudNavLink>
+                <MudNavLink Href="/statistics" Icon="@Icons.Material.Filled.BarChart"
+                            Color="Color.Inherit" Class="nav-item-custom">İstatistikler</MudNavLink>
+
+                <MudNavLink Href="/analytics" Icon="@Icons.Material.Filled.Analytics" IconColor="Color.Inherit" Class="nav-item-custom">Analizler</MudNavLink>
                 <MudNavLink Href="/map" Icon="@Icons.Material.Filled.Map" IconColor="Color.Inherit" Class="nav-item-custom">Harita</MudNavLink>
 
                 <MudText Typo="Typo.overline" Class="px-4 mt-6 mb-2 d-block" Style="color: #90caf9; font-weight: bold;">YÖNETİM</MudText>
                 <MudNavLink Href="/alerts" Icon="@Icons.Material.Filled.WarningAmber" IconColor="Color.Inherit" Class="nav-item-custom">Alarmlar</MudNavLink>
-                <MudNavLink Href="/reports" Icon="@Icons.Material.Filled.Analytics" IconColor="Color.Inherit" Class="nav-item-custom">Raporlar</MudNavLink>
+                <MudNavLink Href="/reports" Icon="@Icons.Material.Filled.Description" IconColor="Color.Inherit" Class="nav-item-custom">Raporlar</MudNavLink>
                 <MudNavLink Href="/settings" Icon="@Icons.Material.Filled.Settings" IconColor="Color.Inherit" Class="nav-item-custom">Ayarlar</MudNavLink>
             </MudNavMenu>
 
@@ -65,10 +65,10 @@
         {
             PaletteLight = new PaletteLight()
             {
-                Primary = "#0d47a1",
-                Secondary = "#ff9800",
+                Primary = "#0d47a1",    // Ana Lacivert
+                Secondary = "#ff9800",  // Turuncu Vurgu
                 AppbarBackground = "#ffffff",
-                Background = "#f5f7fa",
+                Background = "#f5f7fa", // Açık Gri Zemin
                 TextPrimary = "#37474f",
                 DrawerBackground = "#0d47a1",
                 DrawerText = "#ffffff",

@@ -1,0 +1,139 @@
+﻿@page "/turbines/{TurbineId:int}"
+@using WindTurbine.App.Services
+@using WindTurbine.DTOs.Turbines
+@using WindTurbine.App.Components
+@inject IApiService ApiService
+@inject NavigationManager NavManager
+
+<PageTitle>Türbin Teknik Detay</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-6 mb-6">
+
+    <div class="d-flex align-center justify-space-between mb-6">
+        <div class="d-flex align-center">
+            <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Color="Color.Inherit" OnClick="@(() => NavManager.NavigateTo("/turbines"))" Class="mr-3" />
+            <div>
+                <MudText Typo="Typo.h4" Color="Color.Primary"><b>@(turbine?.Name ?? "Yükleniyor...")</b></MudText>
+                <MudText Typo="Typo.body1" Class="mud-text-secondary">@turbine?.Model</MudText>
+            </div>
+        </div>
+        @if (turbine != null)
+        {
+            <MudChip T="string" Color="@GetStatusColor(turbine.LastStatus)" Variant="Variant.Filled" Size="Size.Large" Label="true">@turbine.LastStatus.ToUpper()</MudChip>
+        }
+    </div>
+
+    @if (loading)
+    {
+        <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+    }
+    else if (turbine != null)
+    {
+        <MudGrid>
+            <MudItem xs="12" md="5" Class="d-flex justify-center align-center">
+                <MudPaper Elevation="0" Class="pa-4" Style="background: transparent;">
+                    <MudImage Src="images/turbine_render.png" Alt="Turbine" Fluid="true" Style="max-height: 500px;" />
+                </MudPaper>
+
+                <MudPaper Elevation="3" Class="pa-4 mt-4 rounded-lg" Style="width: 100%;">
+                    <div class="d-flex justify-space-between">
+                        <MudText>Anlık Güç:</MudText>
+                        <MudText><b>@turbine.CurrentPower.ToString("F2") kW</b></MudText>
+                    </div>
+                    <div class="d-flex justify-space-between">
+                        <MudText>Rüzgar:</MudText>
+                        <MudText><b>@turbine.CurrentWindSpeed.ToString("F1") m/s</b></MudText>
+                    </div>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" md="7">
+                <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6">
+
+                    <MudTabPanel Text="Pitch" Icon="@Icons.Material.Filled.CompareArrows">
+                        <MudGrid>
+                            <SensorItem Title="Pitch Açısı" Value="@turbine.PitchAngle" Unit="°" IsNormal="@(turbine.PitchAngle < 5)" />
+                            <SensorItem Title="Kanat Titreşimi" Value="@turbine.BladeVibration" Unit="mm/s" IsNormal="@(turbine.BladeVibration < 5)" />
+                            <SensorItem Title="Hub Sıcaklığı" Value="@turbine.HubTemperature" Unit="°C" IsNormal="@(turbine.HubTemperature < 65)" />
+                        </MudGrid>
+                    </MudTabPanel>
+
+                    <MudTabPanel Text="Gearbox" Icon="@Icons.Material.Filled.Settings">
+                        <MudGrid>
+                            <SensorItem Title="Yağ Sıcaklığı" Value="@turbine.GearboxOilTemp" Unit="°C" IsNormal="@(turbine.GearboxOilTemp < 90)" />
+                            <SensorItem Title="Titreşim" Value="@turbine.GearboxVibration" Unit="mm/s" IsNormal="@(turbine.GearboxVibration < 8)" />
+                            <SensorItem Title="Ana Rulman Isısı" Value="@turbine.MainBearingTemp" Unit="°C" IsNormal="@(turbine.MainBearingTemp < 85)" />
+                        </MudGrid>
+                    </MudTabPanel>
+
+                    <MudTabPanel Text="Generator" Icon="@Icons.Material.Filled.Bolt">
+                        <MudGrid>
+                            <SensorItem Title="Stator Isısı" Value="@turbine.GeneratorTemp" Unit="°C" IsNormal="@(turbine.GeneratorTemp < 110)" />
+                            <SensorItem Title="Devir Hızı" Value="@turbine.GeneratorRPM" Unit="RPM" IsNormal="@(turbine.GeneratorRPM < 1800)" />
+                        </MudGrid>
+                    </MudTabPanel>
+
+                    <MudTabPanel Text="Trafo" Icon="@Icons.Material.Filled.ElectricalServices">
+                        <MudGrid>
+                            <SensorItem Title="Trafo Isısı" Value="@turbine.TransformerTemp" Unit="°C" IsNormal="@(turbine.TransformerTemp < 95)" />
+                        </MudGrid>
+                    </MudTabPanel>
+
+                </MudTabs>
+            </MudItem>
+        </MudGrid>
+    }
+    else
+    {
+        <MudAlert Severity="Severity.Error">Türbin bulunamadı (ID: @TurbineId).</MudAlert>
+    }
+
+</MudContainer>
+
+@code {
+    [Parameter] public int TurbineId { get; set; }
+    private TurbineDto turbine;
+    private bool loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Canlı Takip Zamanlayıcısı (Timer)
+        var timer = new System.Timers.Timer(2000); // 2 saniyede bir yenile
+        timer.Elapsed += async (sender, e) => await InvokeAsync(VerileriGuncelle);
+        timer.Start();
+
+        await VerileriGuncelle();
+    }
+
+    private async Task VerileriGuncelle()
+    {
+        // Sadece ilk yüklemede loading göster, sonra akıcı olsun
+        if (turbine == null) loading = true;
+
+        try
+        {
+            var allTurbines = await ApiService.GetTurbinesAsync();
+            var t = allTurbines.FirstOrDefault(x => x.TurbineId == TurbineId);
+            if (t != null)
+            {
+                turbine = t;
+                StateHasChanged(); // Arayüzü tazele
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private Color GetStatusColor(string status)
+    {
+        if (status == "Arızalı" || status == "5") return Color.Error;
+        if (status == "Bakımda" || status == "4") return Color.Warning;
+        return Color.Success;
+    }
+}

@@ -11,6 +11,13 @@ namespace WindTurbine.DataAccess.Repositories // veya .Concrete
 {
     public class EfAlertRepository : IAlertRepository
     {
+        public List<Alert> GetAlertsByTurbine(int turbineId, DateTime fromDate)
+        {
+            return _context.Alerts
+                .Where(a => a.TurbineId == turbineId && a.Timestamp >= fromDate)
+                .ToList();
+        }
+
         // DbContext'i "Dependency Injection" (DI) ile alacağız
         private readonly WindTurbineDbContext _context;
 

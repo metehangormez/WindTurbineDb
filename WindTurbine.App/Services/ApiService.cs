@@ -2,6 +2,7 @@
 using WindTurbine.DTOs.Alerts;
 using WindTurbine.DTOs.Dashboard;
 using WindTurbine.DTOs.Reports;
+using WindTurbine.DTOs.Turbine;
 using WindTurbine.DTOs.Turbines;
 using WindTurbine.DTOs.Weather; 
 
@@ -9,6 +10,12 @@ namespace WindTurbine.App.Services
 {
     public class ApiService : IApiService
     {
+        public async Task<TurbineHealthDto?> GetTurbineHealthAsync(int turbineId)
+        {
+            return await _httpClient
+                .GetFromJsonAsync<TurbineHealthDto>($"api/TurbineHealth/{turbineId}");
+        }
+
         public async Task<bool> CreateReportAsync(ReportDto report)
         {
             

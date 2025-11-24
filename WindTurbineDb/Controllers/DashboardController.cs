@@ -22,7 +22,7 @@ namespace WindTurbineDb.Controllers
         {
             var dto = new DashboardDto();
 
-            // --- 1. VERİTABANINDAN GERÇEK VERİLERİ ÇEK ---
+            // 1. GERÇEK VERİLERİ ÇEK
             var alerts = _alertService.GetAllAlerts();
             var turbines = _turbineService.GetAllTurbines();
 
@@ -32,25 +32,25 @@ namespace WindTurbineDb.Controllers
             // Kart: Toplam Türbin
             dto.ToplamTurbinSayisi = turbines.Count;
 
-            // Kart: Aktif Türbinler (Sadece 'Aktif' durumunda olanlar)
-            dto.AktifTurbinSayisi = turbines.Count(t => t.LastStatus == "Aktif");
+            // Kart: Aktif Türbin Sayısı (Burada da Bakımdakileri dahil edelim mi? 
+            // Genelde 'Aktif' denince üretime katkı verenler anlaşılır, o yüzden dahil ediyorum)
+            dto.AktifTurbinSayisi = turbines.Count(t =>
+                t.LastStatus != "Arızalı" && t.LastStatus != "5");
 
-            // Kart: AI Önerileri (Şimdilik sabit, AI servisi bağlanınca değişecek)
             dto.ToplamOneriSayisi = 89;
 
-            // Kart: Günlük Üretim (Tüm türbinlerin o anki güçlerinin toplamı)
-            // Worker servisi veritabanını güncelledikçe bu sayı değişecek.
-            double anlikToplamGuc = turbines.Sum(t => t.CurrentPower);
-            dto.ToplamUretimMW = Math.Round(anlikToplamGuc, 2);
+            // --- GÜNCELLENEN KISIM: GÜÇ TOPLAMI ---
+            // Mantık: Arızalı OMAYAN her şeyi topla (Aktif + Bakımda)
+            double anlikToplamGuc = turbines
+                .Where(t => t.LastStatus != "Arızalı" && t.LastStatus != "5")
+                .Sum(t => t.CurrentPower);
 
-            // Kart: Verimlilik (Şimdilik sabit bir değer veya basit bir oran)
+            dto.ToplamUretimMW = Math.Round(anlikToplamGuc, 2);
+            // --------------------------------------
+
             dto.VerimlilikYuzdesi = 98.2;
 
-
-            // --- 2. GRAFİK VERİLERİ (YARI GERÇEK SİMÜLASYON) ---
-            // Gerçek bir "Geçmiş Üretim Tablosu" olmadığı için, 
-            // anlık gücü baz alarak mantıklı bir geçmiş grafiği üretiyoruz.
-
+            // 2. GRAFİK VERİLERİ (Simülasyonun tabanı da güncellenmiş toplama göre olacak)
             dto.SaatEtiketleri = new List<string> { "00:00", "04:00", "08:00", "12:00", "16:00", "20:00", "23:59" };
 
             var random = new Random();
@@ -59,17 +59,14 @@ namespace WindTurbineDb.Controllers
 
             for (int i = 0; i < 7; i++)
             {
-                // Gerçekleşen: Anlık toplama yakın rastgele dalgalanma (+-%20)
                 double simValue = anlikToplamGuc * (0.8 + (random.NextDouble() * 0.4));
                 if (simValue < 0) simValue = 0;
                 historyData.Add(Math.Round(simValue, 1));
 
-                // Beklenen: İdeal üretim (Anlık güçten biraz daha fazla)
                 double expValue = anlikToplamGuc * 1.1;
                 expectedData.Add(Math.Round(expValue, 1));
             }
 
-            // Grafiğin son noktası, kartta yazan "Gerçek Değer" ile aynı olsun
             if (historyData.Count > 0)
             {
                 historyData[historyData.Count - 1] = dto.ToplamUretimMW;
@@ -79,6 +76,7 @@ namespace WindTurbineDb.Controllers
             dto.BeklenenUretimSerisi = expectedData;
 
             return Ok(dto);
-        }
+        
+    }
     }
 }

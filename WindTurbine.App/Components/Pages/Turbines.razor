@@ -3,80 +3,159 @@
 @using WindTurbine.DTOs.Turbines
 @inject IApiService ApiService
 @inject ISnackbar Snackbar
+@inject NavigationManager NavManager
 @inject IDialogService DialogService
 
-<PageTitle>Türbin Listesi</PageTitle>
+<PageTitle>Türbin Sahası</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-6 mb-6">
 
-    <div class="d-flex justify-content-between align-items-center mb-6">
-        <div>
-            <MudText Typo="Typo.h5" Style="font-weight: 700; color: #2c3e50;">Türbin Listesi</MudText>
-            <MudText Typo="Typo.body2" Class="mud-text-secondary">Gerçek zamanlı SCADA verileri</MudText>
+    <MudGrid Class="mb-6">
+        <MudItem xs="12" sm="4">
+            <MudPaper Elevation="0" Class="pa-4 rounded-lg border-solid border-1 mud-border-lines-default d-flex align-center justify-space-between" Style="border-left: 6px solid #2e7d32; background: white;">
+                <div>
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">AKTİF</MudText>
+                    <MudText Typo="Typo.h4" Style="font-weight: 700; color: #2e7d32;">@aktifSayisi</MudText>
+                </div>
+                <MudAvatar Color="Color.Success" Variant="Variant.Filled" Size="Size.Large" Rounded="true">
+                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" />
+                </MudAvatar>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" sm="4">
+            <MudPaper Elevation="0" Class="pa-4 rounded-lg border-solid border-1 mud-border-lines-default d-flex align-center justify-space-between" Style="border-left: 6px solid #c62828; background: white;">
+                <div>
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">ARIZALI</MudText>
+                    <MudText Typo="Typo.h4" Style="font-weight: 700; color: #c62828;">@arizaliSayisi</MudText>
+                </div>
+                <MudAvatar Color="Color.Error" Variant="Variant.Filled" Size="Size.Large" Rounded="true">
+                    <MudIcon Icon="@Icons.Material.Filled.Error" />
+                </MudAvatar>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" sm="4">
+            <MudPaper Elevation="0" Class="pa-4 rounded-lg border-solid border-1 mud-border-lines-default d-flex align-center justify-space-between" Style="border-left: 6px solid #ef6c00; background: white;">
+                <div>
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">BAKIMDA</MudText>
+                    <MudText Typo="Typo.h4" Style="font-weight: 700; color: #ef6c00;">@bakimdaSayisi</MudText>
+                </div>
+                <MudAvatar Color="Color.Warning" Variant="Variant.Filled" Size="Size.Large" Rounded="true">
+                    <MudIcon Icon="@Icons.Material.Filled.Build" />
+                </MudAvatar>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div style="width: 300px;">
+            <MudTextField @bind-Value="searchString"
+                          Placeholder="Türbin Ara..."
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Class="mt-0"
+                          Style="background-color: white;" />
         </div>
-        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" Color="Color.Secondary" OnClick="OpenAddDialog">Yeni Türbin Ekle</MudButton>
+        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" Color="Color.Secondary" OnClick="OpenAddDialog">Yeni Ekle</MudButton>
     </div>
 
-    <MudTable Items="@turbines" 
-              Dense="true" 
-              Hover="true" 
-              Striped="true" 
-              Filter="new Func<TurbineDto,bool>(FilterFunc)" 
-              Loading="@yukleniyor"
-              Elevation="0"
-              Class="border-solid border-1 mud-border-lines-default rounded-lg">
+    @if (yukleniyor)
+    {
+        <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-4" />
+        <MudText Align="Align.Center">Saha verileri yükleniyor...</MudText>
+    }
+    else
+    {
+        <MudGrid>
+            @foreach (var turbine in FilteredTurbines)
+            {
+                <MudItem xs="12" sm="6" md="4" lg="3">
+                    <div @onclick="@(() => GoToDetail(turbine.TurbineId))" style="cursor: pointer;">
+                        <MudPaper Elevation="3"
+                                  Class="pa-4 rounded-xl hover-effect d-flex flex-column relative overflow-hidden"
+                                  Style="@($"height: 220px; background: {GetBackgroundColor(turbine.LastStatus)}; color: white;")">
 
-        <ToolBarContent>
-            <MudTextField @bind-Value="searchString" Placeholder="Ara..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
-        </ToolBarContent>
+                            <MudIcon Icon="@Icons.Material.Filled.WindPower"
+                                     Style="position: absolute; right: -20px; bottom: -20px; font-size: 10rem; opacity: 0.2; color: white;" />
 
-        <HeaderContent>
-            <MudTh>DURUM</MudTh>
-            <MudTh>TÜRBİN ADI</MudTh>
-            <MudTh>MODEL</MudTh>
-            <MudTh>ANLIK GÜÇ</MudTh>
-            <MudTh>RÜZGAR HIZI</MudTh>
-            <MudTh>İŞLEMLER</MudTh>
-        </HeaderContent>
+                            <div class="d-flex justify-space-between align-start z-10">
+                                <div>
+                                    <MudText Typo="Typo.h6" Style="font-weight: 800;">@turbine.Name</MudText>
+                                    <MudText Typo="Typo.caption" Style="opacity: 0.9;">@turbine.Model</MudText>
+                                </div>
 
-        <RowTemplate>
-            <MudTd DataLabel="Durum">
-                @if (context.LastStatus == "Aktif" || context.LastStatus == "Normal" || context.LastStatus == "1")
-                {
-                        <MudChip T="string" Color="Color.Success" Size="Size.Small" Icon="@Icons.Material.Filled.CheckCircle">AKTİF</MudChip>
-                }
-                else if (context.LastStatus == "Arızalı" || context.LastStatus == "5")
-                {
-                        <MudChip T="string" Color="Color.Error" Size="Size.Small" Icon="@Icons.Material.Filled.Error">ARIZALI</MudChip>
-                }
-                else
-                {
-                        <MudChip T="string" Color="Color.Warning" Size="Size.Small" Icon="@Icons.Material.Filled.Build">@context.LastStatus?.ToUpper()</MudChip>
-                }
-            </MudTd>
+                                <span @onclick:stopPropagation="true" class="d-flex">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                                   Size="Size.Small"
+                                                   Style="color: rgba(255,255,255,0.9);"
+                                                   OnClick="@((e) => OpenEditDialog(turbine))" />
 
-            <MudTd DataLabel="Türbin Adı" Style="font-weight:600;">@context.Name</MudTd>
-            <MudTd DataLabel="Model">@context.Model</MudTd>
-            <MudTd DataLabel="Güç">@context.CurrentPower.ToString("F2") kW</MudTd>
-            <MudTd DataLabel="Rüzgar">@context.CurrentWindSpeed.ToString("F1") m/s</MudTd>
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                   Size="Size.Small"
+                                                   Style="color: rgba(255,255,255,0.9);"
+                                                   OnClick="@((e) => DeleteTurbine(turbine))" />
+                                </span>
+                            </div>
 
-            <MudTd DataLabel="İşlemler">
-                <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Size="Size.Small" OnClick="@(() => OpenEditDialog(context))" />
-                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteTurbine(context))" />
-            </MudTd>
-        </RowTemplate>
+                            <MudSpacer />
 
-        <PagerContent>
-            <MudTablePager />
-        </PagerContent>
-    </MudTable>
+                            <div class="d-flex justify-space-between align-end z-10 mt-4">
+                                <div class="d-flex flex-column">
+                                    <MudText Typo="Typo.caption" Style="opacity: 0.8;">GÜÇ</MudText>
+                                    <div class="d-flex align-center">
+                                        <MudIcon Icon="@Icons.Material.Filled.Bolt" Size="Size.Small" Class="mr-1" />
+                                        <MudText Typo="Typo.body1"><b>@turbine.CurrentPower.ToString("F1")</b> kW</MudText>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex flex-column align-end">
+                                    <MudText Typo="Typo.caption" Style="opacity: 0.8;">RÜZGAR</MudText>
+                                    <div class="d-flex align-center">
+                                        <MudText Typo="Typo.body1"><b>@turbine.CurrentWindSpeed.ToString("F1")</b> m/s</MudText>
+                                        <MudIcon Icon="@Icons.Material.Filled.Air" Size="Size.Small" Class="ml-1" />
+                                    </div>
+                                </div>
+                            </div>
+                        </MudPaper>
+                    </div>
+                </MudItem>
+            }
+        </MudGrid>
+    }
 
 </MudContainer>
+
+<style>
+    .hover-effect {
+        transition: transform 0.2s;
+    }
+
+        .hover-effect:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+    .z-10 {
+        z-index: 10;
+    }
+</style>
 
 @code {
     private List<TurbineDto> turbines = new List<TurbineDto>();
     private bool yukleniyor = true;
     private string searchString = "";
+
+    private int aktifSayisi = 0;
+    private int arizaliSayisi = 0;
+    private int bakimdaSayisi = 0;
+
+    private IEnumerable<TurbineDto> FilteredTurbines =>
+        string.IsNullOrWhiteSpace(searchString)
+        ? turbines
+        : turbines.Where(t => t.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase));
 
     protected override async Task OnInitializedAsync()
     {
@@ -92,70 +171,76 @@
         try
         {
             var data = await ApiService.GetTurbinesAsync();
-            if (data != null) { turbines = data; StateHasChanged(); }
+            if (data != null)
+            {
+                turbines = data;
+                aktifSayisi = turbines.Count(t => t.LastStatus == "Aktif" || t.LastStatus == "Normal" || t.LastStatus == "1" || t.LastStatus == "0" || t.LastStatus == "Bakımda" || t.LastStatus == "4");
+                arizaliSayisi = turbines.Count(t => t.LastStatus == "Arızalı" || t.LastStatus == "5");
+                bakimdaSayisi = turbines.Count(t => t.LastStatus == "Bakımda" || t.LastStatus == "4");
+                StateHasChanged();
+            }
         }
         catch { }
         finally { yukleniyor = false; }
     }
 
+    // Sayfa Yönlendirme
+    private void GoToDetail(int id)
+    {
+        NavManager.NavigateTo($"/turbines/{id}");
+    }
+
+    private string GetBackgroundColor(string status)
+    {
+        if (status == "Aktif" || status == "1" || status == "0") return "linear-gradient(135deg, #2e7d32 0%, #43a047 100%)";
+        if (status == "Arızalı" || status == "5") return "linear-gradient(135deg, #c62828 0%, #d32f2f 100%)";
+        if (status == "Bakımda" || status == "4") return "linear-gradient(135deg, #ef6c00 0%, #f57c00 100%)";
+        return "linear-gradient(135deg, #455a64 0%, #607d8b 100%)";
+    }
 
     private async Task OpenAddDialog()
     {
         var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true };
-        var dialog = DialogService.Show<TurbineDialog>("Yeni Türbin Ekle", options);
+        var parameters = new DialogParameters { ["Model"] = null };
+        var dialog = DialogService.Show<TurbineDialog>("Yeni Türbin Ekle", parameters, options);
         var result = await dialog.Result;
 
         if (!result.Canceled)
         {
             var yeniData = (TurbineDto)result.Data;
-           
             var createDto = new TurbineCreateDto
                 {
                     Name = yeniData.Name,
                     Model = yeniData.Model,
-                    WindFarmId = yeniData.WindFarmId
+                    WindFarmId = yeniData.WindFarmId,
+                    InitialStatus = yeniData.LastStatus
                 };
-
-            var basarili = await ApiService.AddTurbineAsync(createDto);
-            if (basarili) { Snackbar.Add("Türbin Eklendi!", Severity.Success); await VerileriYukle(); }
-            else Snackbar.Add("Hata oluştu.", Severity.Error);
+            await ApiService.AddTurbineAsync(createDto);
+            await VerileriYukle();
         }
     }
 
-    
     private async Task OpenEditDialog(TurbineDto item)
     {
-        var parameters = new DialogParameters { ["Model"] = item }; 
+        var parameters = new DialogParameters { ["Model"] = item };
         var dialog = DialogService.Show<TurbineDialog>("Türbin Düzenle", parameters);
         var result = await dialog.Result;
 
         if (!result.Canceled)
         {
             var guncelData = (TurbineDto)result.Data;
-            var basarili = await ApiService.UpdateTurbineAsync(guncelData);
-            if (basarili) { Snackbar.Add("Güncellendi!", Severity.Success); await VerileriYukle(); }
+            await ApiService.UpdateTurbineAsync(guncelData);
+            await VerileriYukle();
         }
     }
 
-   
     private async Task DeleteTurbine(TurbineDto item)
     {
-        bool? result = await DialogService.ShowMessageBox(
-            "Sil?",
-            $"{item.Name} adlı türbini silmek istediğinize emin misiniz?",
-            yesText: "Sil", cancelText: "İptal");
-
+        bool? result = await DialogService.ShowMessageBox("Sil?", $"{item.Name} silinsin mi?", yesText: "Sil", cancelText: "İptal");
         if (result == true)
         {
-            var basarili = await ApiService.DeleteTurbineAsync(item.TurbineId);
-            if (basarili) { Snackbar.Add("Silindi!", Severity.Success); await VerileriYukle(); }
+            await ApiService.DeleteTurbineAsync(item.TurbineId);
+            await VerileriYukle();
         }
-    }
-
-    private bool FilterFunc(TurbineDto element)
-    {
-        if (string.IsNullOrWhiteSpace(searchString)) return true;
-        if (element.Name != null && element.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase)) return true;
-        return false;
     }
 }

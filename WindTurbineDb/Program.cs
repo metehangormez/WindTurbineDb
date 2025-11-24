@@ -9,6 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddScoped<IAlertService, AlertManager>();
 builder.Services.AddScoped<IAlertRepository, EfAlertRepository>();
+builder.Services.AddScoped<ITurbineHealthService, TurbineHealthManager>();
 
 builder.Services.AddScoped<IWindFarmService, WindFarmManager>();
 builder.Services.AddScoped<IWindFarmRepository, EfWindFarmRepository>();

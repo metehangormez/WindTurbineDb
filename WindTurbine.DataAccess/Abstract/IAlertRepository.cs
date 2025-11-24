@@ -11,6 +11,8 @@ namespace WindTurbine.DataAccess.Abstract
     public interface IAlertRepository
     {
         Alert CreateAlert(Alert alert); 
-        List<Alert> GetAllAlerts();     
+        List<Alert> GetAllAlerts();
+        List<Alert> GetAlertsByTurbine(int turbineId, DateTime fromDate);
+
     }
 }

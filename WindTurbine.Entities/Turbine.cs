@@ -26,5 +26,14 @@ namespace WindTurbine.Entities
 
        
         public ICollection<Alert> Alerts { get; set; }
+        public double PitchAngle { get; set; }       // Kanat Açısı (Derece)
+        public double BladeVibration { get; set; }   // Kanat Titreşimi (%)
+        public double HubTemperature { get; set; }   // Hub Sıcaklığı (°C)
+        public double GearboxOilTemp { get; set; }   // Dişli Kutusu Yağ Isısı (°C)
+        public double GearboxVibration { get; set; } // Dişli Kutusu Titreşim (mm/s)
+        public double GeneratorTemp { get; set; }    // Jeneratör Isısı (°C)
+        public double GeneratorRPM { get; set; }     // Jeneratör Devri (RPM)
+        public double MainBearingTemp { get; set; }  // Ana Rulman Isısı (°C)
+        public double TransformerTemp { get; set; }  // Trafo Isısı (°C)
     }
 }

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WindTurbine.DataAccess.Context;
 
@@ -11,9 +12,11 @@ using WindTurbine.DataAccess.Context;
 namespace WindTurbine.DataAccess.Migrations
 {
     [DbContext(typeof(WindTurbineDbContext))]
-    partial class WindTurbineDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251124153739_AddDetailSensors")]
+    partial class AddDetailSensors
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -97,28 +100,10 @@ namespace WindTurbine.DataAccess.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TurbineId"));
 
-                    b.Property<double>("BladeVibration")
-                        .HasColumnType("float");
-
                     b.Property<double>("CurrentPower")
                         .HasColumnType("float");
 
                     b.Property<double>("CurrentWindSpeed")
-                        .HasColumnType("float");
-
-                    b.Property<double>("GearboxOilTemp")
-                        .HasColumnType("float");
-
-                    b.Property<double>("GearboxVibration")
-                        .HasColumnType("float");
-
-                    b.Property<double>("GeneratorRPM")
-                        .HasColumnType("float");
-
-                    b.Property<double>("GeneratorTemp")
-                        .HasColumnType("float");
-
-                    b.Property<double>("HubTemperature")
                         .HasColumnType("float");
 
                     b.Property<string>("LastStatus")
@@ -131,9 +116,6 @@ namespace WindTurbine.DataAccess.Migrations
                     b.Property<double>("Longitude")
                         .HasColumnType("float");
 
-                    b.Property<double>("MainBearingTemp")
-                        .HasColumnType("float");
-
                     b.Property<string>("Model")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -141,12 +123,6 @@ namespace WindTurbine.DataAccess.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<double>("PitchAngle")
-                        .HasColumnType("float");
-
-                    b.Property<double>("TransformerTemp")
-                        .HasColumnType("float");
 
                     b.Property<int>("WindFarmId")
                         .HasColumnType("int");

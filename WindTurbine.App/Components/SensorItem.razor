@@ -1,0 +1,35 @@
+﻿@using MudBlazor
+
+<MudItem xs="6" sm="4">
+    <MudPaper Class="pa-3 d-flex flex-column align-center justify-center" Elevation="1" Style="@GetStyle()">
+        <MudText Typo="Typo.caption" Align="Align.Center" Class="mud-text-secondary">@Title</MudText>
+        <MudText Typo="Typo.h6" Style="font-weight:bold;">@Value.ToString("0.##") <span style="font-size:0.7em">@Unit</span></MudText>
+
+        @if (!IsNormal)
+        {
+            <MudChip T="string" Color="Color.Error" Size="Size.Small" Class="mt-1">RİSKLİ</MudChip>
+        }
+    </MudPaper>
+</MudItem>
+
+@code {
+    [Parameter] public string Title { get; set; }
+    [Parameter] public double Value { get; set; }
+    [Parameter] public string Unit { get; set; }
+
+    // Bu parametreler TurbineDetail sayfasından geliyor
+    [Parameter] public double Min { get; set; }
+    [Parameter] public double Max { get; set; }
+    [Parameter] public double Risk1 { get; set; }
+    [Parameter] public double Risk3 { get; set; }
+
+    // "IsNormal" parametresi true ise Yeşil, false ise Kırmızı yapar
+    [Parameter] public bool IsNormal { get; set; } = true;
+    [Parameter] public bool InvertRisk { get; set; } = false;
+
+    private string GetStyle()
+    {
+        if (!IsNormal) return "background-color: #ffebee; border: 1px solid #ef5350;"; // Kırmızı (Riskli)
+        return "background-color: #f1f8e9; border: 1px solid #66bb6a;"; // Yeşil (Normal)
+    }
+}

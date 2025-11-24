@@ -3,22 +3,65 @@
 
 <MudDialog>
     <DialogContent>
-        <MudTextField @bind-Value="Model.Name" Label="Türbin Adı" Variant="Variant.Outlined" Class="mb-4" />
-        <MudTextField @bind-Value="Model.Model" Label="Model (Örn: Siemens SWT-3.0)" Variant="Variant.Outlined" Class="mb-4" />
-        <MudNumericField @bind-Value="Model.WindFarmId" Label="Bağlı Olduğu Saha ID" Variant="Variant.Outlined" />
+        <MudTextField @bind-Value="TempDto.Name" Label="Türbin Adı" Variant="Variant.Outlined" Class="mb-4" />
+        <MudTextField @bind-Value="TempDto.Model" Label="Model (Örn: Siemens SWT-3.0)" Variant="Variant.Outlined" Class="mb-4" />
+
+        <MudNumericField @bind-Value="TempDto.WindFarmId" Label="Bağlı Olduğu Saha ID" Variant="Variant.Outlined" Class="mb-4" />
+
+        <MudSelect T="string" Label="Başlangıç Durumu" @bind-Value="TempDto.InitialStatus" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
+            <MudSelectItem Value="@("1")">
+                <div class="d-flex align-center">
+                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Class="mr-2"/> Aktif (1)
+                </div>
+            </MudSelectItem>
+            <MudSelectItem Value="@("4")">
+                <div class="d-flex align-center">
+                    <MudIcon Icon="@Icons.Material.Filled.Build" Color="Color.Warning" Class="mr-2"/> Bakımda / Yarı Aktif (4)
+                </div>
+            </MudSelectItem>
+            <MudSelectItem Value="@("5")">
+                <div class="d-flex align-center">
+                    <MudIcon Icon="@Icons.Material.Filled.Error" Color="Color.Error" Class="mr-2"/> Arızalı (5)
+                </div>
+            </MudSelectItem>
+        </MudSelect>
     </DialogContent>
+
     <DialogActions>
         <MudButton OnClick="Cancel">İptal</MudButton>
-        <MudButton Color="Color.Primary" OnClick="Submit">Kaydet</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Submit">Kaydet</MudButton>
     </DialogActions>
 </MudDialog>
 
 @code {
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public TurbineDto Model { get; set; }
 
-    
-    [Parameter] public TurbineDto Model { get; set; } = new TurbineDto();
+    private TurbineCreateDto TempDto = new TurbineCreateDto();
 
-    void Submit() => MudDialog.Close(DialogResult.Ok(Model));
+    protected override void OnInitialized()
+    {
+        if (Model != null)
+        {
+            TempDto.Name = Model.Name;
+            TempDto.Model = Model.Model;
+            TempDto.WindFarmId = Model.WindFarmId;
+            TempDto.InitialStatus = Model.LastStatus ?? "1";
+        }
+    }
+
+    void Submit()
+    {
+        var resultDto = new TurbineDto
+            {
+                TurbineId = Model?.TurbineId ?? 0,
+                Name = TempDto.Name,
+                Model = TempDto.Model,
+                WindFarmId = TempDto.WindFarmId,
+                LastStatus = TempDto.InitialStatus
+            };
+        MudDialog.Close(DialogResult.Ok(resultDto));
+    }
+
     void Cancel() => MudDialog.Cancel();
 }
