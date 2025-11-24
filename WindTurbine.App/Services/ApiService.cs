@@ -12,7 +12,7 @@ namespace WindTurbine.App.Services
     {
         public async Task<AvailabilityDto> GetAvailabilityAsync()
         {
-            // SİMÜLASYON VERİSİ (Gerçekte API'den çekilecek)
+           
             await Task.Delay(300);
 
             var data = new AvailabilityDto
@@ -56,10 +56,7 @@ namespace WindTurbine.App.Services
         public async Task<bool> DeleteTurbineAsync(int id) => (await _httpClient.DeleteAsync($"api/Turbines/{id}")).IsSuccessStatusCode;
         public async Task<bool> RegisterAsync(WindTurbine.DTOs.Auth.UserRegisterDto dto) => (await _httpClient.PostAsJsonAsync("api/Auth/register", dto)).IsSuccessStatusCode;
         public async Task<bool> LoginAsync(WindTurbine.DTOs.Auth.UserLoginDto dto) => (await _httpClient.PostAsJsonAsync("api/Auth/login", dto)).IsSuccessStatusCode;
-        // ... (Yukarıdaki metodları koruyun) ...
-
-
-        // --- GÜNCELLENEN METOD: GERÇEK HAVA DURUMU ---
+        
         public async Task<List<WeatherForecastDto>> GetWeatherForecastAsync()
         {
             try

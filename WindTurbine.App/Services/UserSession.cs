@@ -1,7 +1,6 @@
 ﻿namespace WindTurbine.App.Services
 {
-    // Bu sınıf, uygulama açık kaldığı sürece
-    // giriş yapan kullanıcının bilgilerini hafızada tutar.
+    
     public class UserSession
     {
         public int UserId { get; set; }

@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using WindTurbine.App.Services;
-using MudBlazor.Services; // <-- BU ÇOK ÖNEMLİ
+using MudBlazor.Services; 
 
 namespace WindTurbine.App
 {
@@ -25,7 +25,7 @@ namespace WindTurbine.App
             builder.Logging.AddDebug();
 #endif
 
-            // API Bağlantısı (Port numaranız 5279 idi, değişirse güncelleyin)
+            
             builder.Services.AddSingleton<HttpClient>(sp =>
             {
                 var handler = new HttpClientHandler
@@ -37,7 +37,6 @@ namespace WindTurbine.App
 
             builder.Services.AddSingleton<IApiService, ApiService>();
 
-            // --- MUD BLAZOR SERVİSİ (BU EKSİKTİ) ---
             builder.Services.AddMudServices();
 
             return builder.Build();

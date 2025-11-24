@@ -13,7 +13,7 @@
     <div class="d-flex align-center mb-6">
         <MudIconButton Icon="@Icons.Material.Filled.ArrowBack"
                        Color="Color.Inherit"
-                       OnClick='@(() => NavManager.NavigateTo("/dashboard"))'
+                       OnClick="@(() => NavManager.NavigateTo("/dashboard"))"
                        Class="mr-3" />
         <div>
             <MudText Typo="Typo.h4" Color="Color.Primary"><b>Emreamadelik Analizi</b></MudText>
@@ -27,9 +27,12 @@
     }
     else
     {
+        <!-- Üst kartlar -->
         <MudGrid Class="mb-8">
             <MudItem xs="12" sm="4">
-                <MudPaper Elevation="0" Class="pa-4 rounded-lg border-solid border-1 mud-border-lines-default d-flex flex-column align-center justify-center" Style="height: 140px;">
+                <MudPaper Elevation="0"
+                          Class="pa-4 rounded-lg border-solid border-1 mud-border-lines-default d-flex flex-column align-center justify-center"
+                          Style="height: 140px;">
                     <MudText Typo="Typo.subtitle2" Class="mud-text-secondary mb-1">BEKLENEN ÜRETİM</MudText>
                     <div class="d-flex align-center">
                         <MudIcon Icon="@Icons.Material.Filled.ShowChart" Color="Color.Info" Class="mr-2" />
@@ -41,19 +44,23 @@
             </MudItem>
 
             <MudItem xs="12" sm="4">
-                <MudPaper Elevation="0" Class="pa-4 rounded-lg border-solid border-1 mud-border-lines-default d-flex flex-column align-center justify-center" Style="height: 140px; border-bottom: 4px solid #ff9800;">
+                <MudPaper Elevation="0"
+                          Class="pa-4 rounded-lg border-solid border-1 mud-border-lines-default d-flex flex-column align-center justify-center"
+                          Style="height: 140px; border-bottom: 4px solid #ff9800;">
                     <MudText Typo="Typo.subtitle2" Class="mud-text-secondary mb-1">GERÇEKLEŞEN ÜRETİM</MudText>
                     <div class="d-flex align-center">
                         <MudIcon Icon="@Icons.Material.Filled.Bolt" Color="Color.Warning" Class="mr-2" />
                         <MudText Typo="Typo.h4" Color="Color.Warning">
-                            <b>@dashboardData.ToplamUretimMW</b> <span style="font-size:0.6em">MW</span>
+                            <b>@dashboardData.ToplamUretimMW.ToString("F1")</b> <span style="font-size:0.6em">MW</span>
                         </MudText>
                     </div>
                 </MudPaper>
             </MudItem>
 
             <MudItem xs="12" sm="4">
-                <MudPaper Elevation="0" Class="pa-4 rounded-lg border-solid border-1 mud-border-lines-default d-flex flex-column align-center justify-center" Style="height: 140px;">
+                <MudPaper Elevation="0"
+                          Class="pa-4 rounded-lg border-solid border-1 mud-border-lines-default d-flex flex-column align-center justify-center"
+                          Style="height: 140px;">
                     <MudText Typo="Typo.subtitle2" Class="mud-text-secondary mb-1">GÜN SONU TAHMİNİ</MudText>
                     <div class="d-flex align-center">
                         <MudIcon Icon="@Icons.Material.Filled.Flag" Color="Color.Success" Class="mr-2" />
@@ -65,6 +72,7 @@
             </MudItem>
         </MudGrid>
 
+        <!-- Grafik + tablo -->
         <MudPaper Elevation="0" Class="pa-6 rounded-lg border-solid border-1 mud-border-lines-default">
             <div class="d-flex justify-space-between align-center mb-4">
                 <MudText Typo="Typo.h6"><b>Üretim Karşılaştırması (Saatlik)</b></MudText>
@@ -80,13 +88,33 @@
                 </div>
             </div>
 
+            <!-- Bar chart -->
             <MudChart ChartType="ChartType.Bar"
                       ChartSeries="@Series"
                       XAxisLabels="@XAxisLabels"
                       Width="100%"
-                      Height="400px"
-                      ChartOptions="@chartOptions"
-                      />
+                      Height="350px"
+                      ChartOptions="@chartOptions" />
+
+            <!-- Altında sayısal tablo -->
+            <MudDivider Class="my-4" />
+
+            <MudText Typo="Typo.subtitle2" Class="mb-2"><b>Saatlik Değerler</b></MudText>
+
+            <MudTable Items="HourlyRows" Dense="true" Hover="true">
+                <HeaderContent>
+                    <MudTh>Saat</MudTh>
+                    <MudTh>Gerçekleşen (MW)</MudTh>
+                    <MudTh>Beklenen (MW)</MudTh>
+                    <MudTh>Kayıp / Fark (MW)</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Saat">@context.Label</MudTd>
+                    <MudTd DataLabel="Gerçekleşen">@context.Gercekles.ToString("F1")</MudTd>
+                    <MudTd DataLabel="Beklenen">@context.Beklenen.ToString("F1")</MudTd>
+                    <MudTd DataLabel="Kayıp / Fark">@context.Fark.ToString("F1")</MudTd>
+                </RowTemplate>
+            </MudTable>
         </MudPaper>
     }
 
@@ -96,15 +124,18 @@
     private DashboardDto dashboardData = new();
     private bool loading = true;
 
-    // Grafik Verileri
+    // Grafik verileri
     public List<ChartSeries> Series = new();
     public string[] XAxisLabels = Array.Empty<string>();
 
-    // Kart Hesaplamaları
+    // Kart hesaplamaları
     private double TotalBeklenen = 0;
     private double GunSonuTahmini = 0;
 
-    // Grafik Ayarları
+    // Saatlik tablo verisi
+    private List<HourlyRow> HourlyRows = new();
+
+    // Grafik ayarları
     private ChartOptions chartOptions = new ChartOptions()
         {
             YAxisLines = true,
@@ -125,47 +156,60 @@
 
             dashboardData = data;
 
-            // Güvenli koleksiyon al
             var gercekles = data.GerceklesUretimSerisi ?? new List<double>();
             var beklenen = data.BeklenenUretimSerisi ?? new List<double>();
             var labels = data.SaatEtiketleri ?? new List<string>();
 
             int count = Math.Min(gercekles.Count, beklenen.Count);
-
             if (count == 0)
             {
                 Series.Clear();
                 XAxisLabels = Array.Empty<string>();
+                HourlyRows.Clear();
                 TotalBeklenen = 0;
                 GunSonuTahmini = 0;
                 return;
             }
 
-            // Label sayısını da güvenli tut
+            // Etiketleri güvenli uzunlukta al
             XAxisLabels = labels.Take(count).ToArray();
 
-            // 1. Seri: Gerçekleşen
+            // 1. seri: Gerçekleşen
             var series1Data = gercekles.Take(count).ToArray();
             var series1 = new ChartSeries { Name = "Gerçekleşen", Data = series1Data };
 
-            // 2. Seri: Beklenen - Gerçekleşen (kayıp/fark)
+            // 2. seri: Kayıp/Fark (Beklenen - Gerçekleşen)
             var farkData = new double[count];
+            HourlyRows = new List<HourlyRow>(count);
+
             for (int i = 0; i < count; i++)
             {
-                double b = beklenen[i];
                 double g = gercekles[i];
+                double b = beklenen[i];
                 double fark = b - g;
-                farkData[i] = fark > 0 ? fark : 0;
+                if (fark < 0) fark = 0; // negatif olmasın
+
+                farkData[i] = fark;
+
+                string label = (i < labels.Count) ? labels[i] : $"T{i}";
+                HourlyRows.Add(new HourlyRow
+                    {
+                        Label = label,
+                        Gercekles = g,
+                        Beklenen = b,
+                        Fark = b - g   // tabloda gerçek farkı göster
+                    });
             }
+
             var series2 = new ChartSeries { Name = "Kayıp/Fark", Data = farkData };
 
             Series.Clear();
             Series.Add(series1);
             Series.Add(series2);
 
-            // Kart Verileri
+            // Kart verileri
             TotalBeklenen = beklenen.Take(count).Sum();
-            GunSonuTahmini = TotalBeklenen * 1.1; // örnek tahmin mantığı
+            GunSonuTahmini = TotalBeklenen * 1.1; // basit tahmin
         }
         catch (Exception ex)
         {
@@ -175,5 +219,13 @@
         {
             loading = false;
         }
+    }
+
+    private class HourlyRow
+    {
+        public string Label { get; set; } = "";
+        public double Gercekles { get; set; }
+        public double Beklenen { get; set; }
+        public double Fark { get; set; }
     }
 }

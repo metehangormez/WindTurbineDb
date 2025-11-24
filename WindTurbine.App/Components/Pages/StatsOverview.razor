@@ -1,0 +1,198 @@
+﻿@page "/stats-overview"
+@using MudBlazor
+
+<PageTitle>İstatistikler</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="pt-6 pb-8">
+
+    <!-- Başlık -->
+    <MudText Typo="Typo.h4" Class="mb-6" Style="font-weight:800;">
+        İstatistikler
+    </MudText>
+
+    <!-- ÜST SATIR 4 KART -->
+    <MudGrid Class="mb-4">
+
+        <!-- Riskli Uyarılar -->
+        <MudItem xs="12" md="3">
+            <MudPaper Class="istat-card istat-red">
+                <MudText Typo="Typo.subtitle1" Class="mb-2 istat-title">Riskli Uyarılar</MudText>
+                <MudText Typo="Typo.h5" Class="mb-3 istat-value">28</MudText>
+
+                <MudButton Variant="Variant.Filled"
+                           DisableElevation="true"
+                           Class="istat-button">
+                    Uyarıları Gör
+                </MudButton>
+            </MudPaper>
+        </MudItem>
+
+        <!-- Öneriler -->
+        <MudItem xs="12" md="3">
+            <MudPaper Class="istat-card istat-green">
+                <MudText Typo="Typo.subtitle1" Class="mb-2 istat-title">Öneriler</MudText>
+                <MudText Typo="Typo.h5" Class="mb-3 istat-value">89</MudText>
+
+                <MudButton Variant="Variant.Filled"
+                           DisableElevation="true"
+                           Class="istat-button">
+                    Önerileri İncele
+                </MudButton>
+            </MudPaper>
+        </MudItem>
+
+        <!-- Emreamadelik -->
+        <MudItem xs="12" md="3">
+            <MudPaper Class="istat-card istat-dark">
+                <MudText Typo="Typo.subtitle1" Class="mb-2 istat-title">Emreamadelik</MudText>
+                <MudText Typo="Typo.h5" Class="mb-3 istat-value">89/98</MudText>
+
+                <MudButton Variant="Variant.Filled"
+                           DisableElevation="true"
+                           Class="istat-button"
+                           OnClick="@(() => NavToAvailability())">
+                    Detayları İncele
+                </MudButton>
+            </MudPaper>
+        </MudItem>
+
+        <!-- Gün Beklentisi -->
+        <MudItem xs="12" md="3">
+            <MudPaper Class="istat-card istat-dark">
+                <MudText Typo="Typo.subtitle1" Class="mb-2 istat-title">Gün Beklentisi</MudText>
+                <MudText Typo="Typo.h6" Class="mb-3 istat-value">28/80 Mw</MudText>
+
+                <MudButton Variant="Variant.Filled"
+                           DisableElevation="true"
+                           Class="istat-button">
+                    Detayları İncele
+                </MudButton>
+            </MudPaper>
+        </MudItem>
+
+    </MudGrid>
+
+    <!-- ALT SATIR 4 KART -->
+    <MudGrid Class="mb-4">
+
+        <!-- Rüzgar Santrali -->
+        <MudItem xs="12" md="3">
+            <MudPaper Class="istat-card istat-dark">
+                <MudText Typo="Typo.subtitle1" Class="mb-2 istat-title">Rüzgar Santrali</MudText>
+                <MudText Typo="Typo.h6" Class="mb-3 istat-value">%75</MudText>
+
+                <MudButton Variant="Variant.Filled"
+                           DisableElevation="true"
+                           Class="istat-button">
+                    Detayları İncele
+                </MudButton>
+            </MudPaper>
+        </MudItem>
+
+        <!-- Önlenen Kayıp -->
+        <MudItem xs="12" md="3">
+            <MudPaper Class="istat-card istat-dark">
+                <MudText Typo="Typo.subtitle1" Class="mb-2 istat-title">Önlenen Kayıp</MudText>
+                <MudText Typo="Typo.h6" Class="mb-3 istat-value">210 Mw</MudText>
+
+                <MudButton Variant="Variant.Filled"
+                           DisableElevation="true"
+                           Class="istat-button">
+                    Detayları İncele
+                </MudButton>
+            </MudPaper>
+        </MudItem>
+
+        <!-- Meteorolojik Bilgiler -->
+        <MudItem xs="12" md="3">
+            <MudPaper Class="istat-card istat-dark">
+                <MudText Typo="Typo.subtitle1" Class="mb-2 istat-title">Meteorolojik Bilgiler</MudText>
+                <MudText Typo="Typo.h6" Class="mb-3 istat-value">Fırtına</MudText>
+
+                <MudButton Variant="Variant.Filled"
+                           DisableElevation="true"
+                           Class="istat-button">
+                    Detayları İncele
+                </MudButton>
+            </MudPaper>
+        </MudItem>
+
+        <!-- Aylık Rapor -->
+        <MudItem xs="12" md="3">
+            <MudPaper Class="istat-card istat-dark">
+                <MudText Typo="Typo.subtitle1" Class="mb-2 istat-title">Aylık Rapor</MudText>
+                <MudText Typo="Typo.h6" Class="mb-3 istat-value">Hazırlanıyor</MudText>
+
+                <MudButton Variant="Variant.Filled"
+                           DisableElevation="true"
+                           Class="istat-button">
+                    Detayları İncele
+                </MudButton>
+            </MudPaper>
+        </MudItem>
+
+    </MudGrid>
+
+    <!-- Alt uyarı barları -->
+    <div class="d-flex mt-4" style="gap:16px;">
+        <MudPaper Class="pa-2 px-4 rounded-pill"
+                  Style="background:#ff5252; color:white; font-weight:600;">
+            T01 : CCU Sıcaklığı
+        </MudPaper>
+
+        <MudPaper Class="pa-2 px-4 rounded-pill"
+                  Style="background:white; color:#020826; font-weight:500;">
+            T01 son 1 hafta içinde 3 defa 80 derece üstüne çıktı muhtemel baca fanı arızası !
+        </MudPaper>
+    </div>
+
+</MudContainer>
+
+@code {
+    [Inject] private NavigationManager NavManager { get; set; } = default!;
+
+    private void NavToAvailability()
+    {
+        // Detay sayfan: @page "/statistics"
+        NavManager.NavigateTo("/statistics");
+    }
+}
+
+<style>
+    .istat-card {
+        border-radius: 20px;
+        padding: 18px 22px;
+        color: #ffffff;
+        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.25);
+    }
+
+    .istat-red {
+        background-color: #c62828;
+    }
+
+    .istat-green {
+        background-color: #00c853;
+    }
+
+    .istat-dark {
+        background-color: #020826;
+    }
+
+    .istat-button {
+        border-radius: 999px;
+        padding-left: 20px;
+        padding-right: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        background-color: #ffffff;
+        color: inherit;
+    }
+
+    .istat-title {
+        font-weight: 600;
+    }
+
+    .istat-value {
+        font-weight: 700;
+    }
+</style>
