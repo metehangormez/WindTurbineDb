@@ -1,0 +1,127 @@
+﻿@page "/availability"
+@using WindTurbine.App.Services
+@using WindTurbine.DTOs.Dashboard
+@using MudBlazor
+@inject IApiService ApiService
+@inject NavigationManager NavManager
+
+<PageTitle>Emreamadelik Analizi</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-6 mb-6">
+
+    <div class="d-flex align-center mb-6">
+        <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Color="Color.Inherit" OnClick="@(() => NavManager.NavigateTo("/dashboard"))" Class="mr-3" />
+        <div>
+            <MudText Typo="Typo.h4" Color="Color.Primary" Style="font-weight: 700;">Emreamadelik & Performans</MudText>
+            <MudText Typo="Typo.body2" Class="mud-text-secondary">Beklenen ve gerçekleşen üretim analizi</MudText>
+        </div>
+    </div>
+
+    @if (loading)
+    {
+        <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-4" />
+    }
+    else
+    {
+        <MudGrid Class="mb-8">
+            <MudItem xs="12" sm="4">
+                <MudPaper Elevation="0" Class="pa-4 rounded-lg border-solid border-1 mud-border-lines-default">
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">BEKLENEN ÜRETİM</MudText>
+                    <div class="d-flex align-center mt-1">
+                        <MudIcon Icon="@Icons.Material.Filled.ShowChart" Color="Color.Primary" Class="mr-2" />
+                        <MudText Typo="Typo.h4" Color="Color.Primary"><b>@data.BeklenenUretimTotal</b> <span style="font-size:0.6em">MW</span></MudText>
+                    </div>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" sm="4">
+                <MudPaper Elevation="0" Class="pa-4 rounded-lg border-solid border-1 mud-border-lines-default" Style="border-bottom: 4px solid #ff9800;">
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">GERÇEKLEŞEN ÜRETİM</MudText>
+                    <div class="d-flex align-center mt-1">
+                        <MudIcon Icon="@Icons.Material.Filled.Bolt" Color="Color.Warning" Class="mr-2" />
+                        <MudText Typo="Typo.h4" Color="Color.Warning"><b>@data.OlusanUretimTotal</b> <span style="font-size:0.6em">MW</span></MudText>
+                    </div>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" sm="4">
+                <MudPaper Elevation="0" Class="pa-4 rounded-lg border-solid border-1 mud-border-lines-default">
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">GÜN SONU HEDEFİ</MudText>
+                    <div class="d-flex align-center mt-1">
+                        <MudIcon Icon="@Icons.Material.Filled.Flag" Color="Color.Success" Class="mr-2" />
+                        <MudText Typo="Typo.h4" Color="Color.Success"><b>@data.GunBeklentisi</b> <span style="font-size:0.6em">MW</span></MudText>
+                    </div>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+
+        <MudPaper Elevation="0" Class="pa-6 rounded-lg border-solid border-1 mud-border-lines-default">
+            <div class="d-flex justify-space-between align-center mb-4">
+                <MudText Typo="Typo.h6"><b>Üretim Karşılaştırması (Saatlik)</b></MudText>
+                <div class="d-flex gap-4">
+                    <div class="d-flex align-center">
+                        <div style="width: 12px; height: 12px; background-color: rgba(25, 118, 210, 0.3); border-radius: 50%; margin-right: 8px;"></div>
+                        <MudText Typo="Typo.caption">Beklenen (Hedef)</MudText>
+                    </div>
+                    <div class="d-flex align-center">
+                        <div style="width: 12px; height: 12px; background-color: #ff9800; border-radius: 50%; margin-right: 8px;"></div>
+                        <MudText Typo="Typo.caption">Gerçekleşen</MudText>
+                    </div>
+                </div>
+            </div>
+
+            <MudChart ChartType="ChartType.Bar"
+                      ChartSeries="@Series"
+                      XAxisLabels="@XAxisLabels"
+                      Width="100%"
+                      Height="400px"
+                      ChartOptions="@chartOptions"></MudChart>
+        </MudPaper>
+    }
+
+</MudContainer>
+
+@code {
+    private AvailabilityDto data = new AvailabilityDto();
+    private bool loading = true;
+
+    public List<ChartSeries> Series = new List<ChartSeries>();
+    public string[] XAxisLabels = { };
+
+    // Grafik Ayarları (Renkler burada belirleniyor)
+    private ChartOptions chartOptions = new ChartOptions()
+        {
+            YAxisLines = true,
+        // Renk 1: Beklenen (Mavi, Saydamlığı artırılmış gibi duracak açık ton)
+        // Renk 2: Gerçekleşen (Turuncu, Koyu ve belirgin)
+            ChartPalette = new string[] { "rgba(25, 118, 210, 0.4)", "#ff9800" }
+        };
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            data = await ApiService.GetAvailabilityAsync();
+
+            if (data != null)
+            {
+                XAxisLabels = data.Labels.ToArray();
+                Series.Clear();
+
+                // 1. Seri: Beklenen (Arkada, büyük ve açık renk)
+                Series.Add(new ChartSeries { Name = "Beklenen", Data = data.BeklenenSeries.ToArray() });
+
+                // 2. Seri: Oluşan (Önde, koyu renk)
+                Series.Add(new ChartSeries { Name = "Gerçekleşen", Data = data.OlusanSeries.ToArray() });
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Veri hatası: " + ex.Message);
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+}

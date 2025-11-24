@@ -10,6 +10,24 @@ namespace WindTurbine.App.Services
 {
     public class ApiService : IApiService
     {
+        public async Task<AvailabilityDto> GetAvailabilityAsync()
+        {
+            // SİMÜLASYON VERİSİ (Gerçekte API'den çekilecek)
+            await Task.Delay(300);
+
+            var data = new AvailabilityDto
+            {
+                BeklenenUretimTotal = 750.5,
+                OlusanUretimTotal = 625.4,
+                GunBeklentisi = 800.0,
+
+                Labels = new List<string> { "00:00", "04:00", "08:00", "12:00", "16:00", "20:00", "23:59" },
+                BeklenenSeries = new List<double> { 50, 45, 70, 90, 95, 85, 60 },
+                OlusanSeries = new List<double> { 40, 25, 60, 85, 90, 75, 50 }
+            };
+
+            return data;
+        }
         public async Task<TurbineHealthDto?> GetTurbineHealthAsync(int turbineId)
         {
             return await _httpClient

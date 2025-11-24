@@ -1,362 +1,179 @@
 ﻿@page "/statistics"
-@using System.Linq
-@using MudBlazor
 @using WindTurbine.App.Services
 @using WindTurbine.DTOs.Dashboard
-@using WindTurbine.DTOs.Alerts
-
+@using MudBlazor
 @inject IApiService ApiService
+@inject NavigationManager NavManager
 @inject ISnackbar Snackbar
 
-<PageTitle>İstatistikler</PageTitle>
+<PageTitle>İstatistikler ve Emreamadelik</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-6 mb-6">
 
-    <!-- Başlık -->
-    <div class="mb-6 d-flex justify-space-between align-center">
-        <MudText Typo="Typo.h4" Style="font-weight: 700; color: #111827;">
-            İstatistikler
-        </MudText>
-
-        <MudButton Variant="Variant.Filled"
-                   Color="Color.Primary"
-                   StartIcon="@Icons.Material.Filled.Refresh"
-                   OnClick="LoadData"
-                   Disabled="@loading">
-            @(loading ? "Yükleniyor..." : "Yenile")
-        </MudButton>
+    <div class="d-flex align-center mb-6">
+        <MudIconButton Icon="@Icons.Material.Filled.ArrowBack"
+                       Color="Color.Inherit"
+                       OnClick='@(() => NavManager.NavigateTo("/dashboard"))'
+                       Class="mr-3" />
+        <div>
+            <MudText Typo="Typo.h4" Color="Color.Primary"><b>Emreamadelik Analizi</b></MudText>
+            <MudText Typo="Typo.body2" Class="mud-text-secondary">Detaylı üretim ve kayıp raporları</MudText>
+        </div>
     </div>
 
-    @if (loading && dashboardData is null)
+    @if (loading)
     {
         <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-4" />
-        <MudText Align="Align.Center">Veriler yükleniyor...</MudText>
-    }
-    else if (dashboardData is null)
-    {
-        <MudAlert Severity="Severity.Error">
-            İstatistik verileri alınırken bir hata oluştu.
-        </MudAlert>
     }
     else
     {
-        <!-- Kartlar -->
         <MudGrid Class="mb-8">
-
-            <!-- Riskli Uyarılar -->
-            <MudItem xs="12" sm="6" md="3">
-                <MudPaper Class="stat-card stat-danger">
-                    <div>
-                        <div class="stat-title">Riskli Uyarılar</div>
-                        <div class="stat-value">@dashboardData.RiskliUyariSayisi</div>
+            <MudItem xs="12" sm="4">
+                <MudPaper Elevation="0" Class="pa-4 rounded-lg border-solid border-1 mud-border-lines-default d-flex flex-column align-center justify-center" Style="height: 140px;">
+                    <MudText Typo="Typo.subtitle2" Class="mud-text-secondary mb-1">BEKLENEN ÜRETİM</MudText>
+                    <div class="d-flex align-center">
+                        <MudIcon Icon="@Icons.Material.Filled.ShowChart" Color="Color.Info" Class="mr-2" />
+                        <MudText Typo="Typo.h4" Color="Color.Info">
+                            <b>@TotalBeklenen.ToString("F1")</b> <span style="font-size:0.6em">MW</span>
+                        </MudText>
                     </div>
-                    <MudButton Variant="Variant.Filled"
-                               Color="Color.Primary"
-                               Class="stat-button"
-                               Style="background-color: white; color: #c62828;"
-                               Href="/alerts">
-                        Uyarıları Gör
-                    </MudButton>
                 </MudPaper>
             </MudItem>
 
-            <!-- Öneriler -->
-            <MudItem xs="12" sm="6" md="3">
-                <MudPaper Class="stat-card stat-success">
-                    <div>
-                        <div class="stat-title">Öneriler</div>
-                        <div class="stat-value">@dashboardData.ToplamOneriSayisi</div>
+            <MudItem xs="12" sm="4">
+                <MudPaper Elevation="0" Class="pa-4 rounded-lg border-solid border-1 mud-border-lines-default d-flex flex-column align-center justify-center" Style="height: 140px; border-bottom: 4px solid #ff9800;">
+                    <MudText Typo="Typo.subtitle2" Class="mud-text-secondary mb-1">GERÇEKLEŞEN ÜRETİM</MudText>
+                    <div class="d-flex align-center">
+                        <MudIcon Icon="@Icons.Material.Filled.Bolt" Color="Color.Warning" Class="mr-2" />
+                        <MudText Typo="Typo.h4" Color="Color.Warning">
+                            <b>@dashboardData.ToplamUretimMW</b> <span style="font-size:0.6em">MW</span>
+                        </MudText>
                     </div>
-                    <MudButton Variant="Variant.Filled"
-                               Color="Color.Primary"
-                               Class="stat-button"
-                               Style="background-color: white; color: #1b5e20;">
-                        Önerileri İncele
-                    </MudButton>
                 </MudPaper>
             </MudItem>
 
-            <!-- Emre Amadelik -->
-            <MudItem xs="12" sm="6" md="3">
-                <MudPaper Class="stat-card stat-dark">
-                    <div>
-                        <div class="stat-title">Emre Amadelik</div>
-                        <div class="stat-value">
-                            @EmreAmadelikText
-                        </div>
+            <MudItem xs="12" sm="4">
+                <MudPaper Elevation="0" Class="pa-4 rounded-lg border-solid border-1 mud-border-lines-default d-flex flex-column align-center justify-center" Style="height: 140px;">
+                    <MudText Typo="Typo.subtitle2" Class="mud-text-secondary mb-1">GÜN SONU TAHMİNİ</MudText>
+                    <div class="d-flex align-center">
+                        <MudIcon Icon="@Icons.Material.Filled.Flag" Color="Color.Success" Class="mr-2" />
+                        <MudText Typo="Typo.h4" Color="Color.Success">
+                            <b>@GunSonuTahmini.ToString("F1")</b> <span style="font-size:0.6em">MW</span>
+                        </MudText>
                     </div>
-                    <MudButton Variant="Variant.Filled"
-                               Color="Color.Primary"
-                               Class="stat-button"
-                               Style="background-color: white; color: #0b1020;">
-                        Detayları İncele
-                    </MudButton>
-                </MudPaper>
-            </MudItem>
-
-            <!-- Gün Beklentisi -->
-            <MudItem xs="12" sm="6" md="3">
-                <MudPaper Class="stat-card stat-dark">
-                    <div>
-                        <div class="stat-title">Gün Beklentisi</div>
-                        <div class="stat-value">@GunBeklentisiText</div>
-                    </div>
-                    <MudButton Variant="Variant.Filled"
-                               Color="Color.Primary"
-                               Class="stat-button"
-                               Style="background-color: white; color: #0b1020;">
-                        Detayları İncele
-                    </MudButton>
-                </MudPaper>
-            </MudItem>
-
-            <!-- Rüzgar Santrali Verim -->
-            <MudItem xs="12" sm="6" md="3">
-                <MudPaper Class="stat-card stat-dark">
-                    <div>
-                        <div class="stat-title">Rüzgar Santrali</div>
-                        <div class="stat-value">@VerimText</div>
-                    </div>
-                    <MudButton Variant="Variant.Filled"
-                               Color="Color.Primary"
-                               Class="stat-button"
-                               Style="background-color: white; color: #0b1020;">
-                        Detayları İncele
-                    </MudButton>
-                </MudPaper>
-            </MudItem>
-
-            <!-- Önlenen Kayıp -->
-            <MudItem xs="12" sm="6" md="3">
-                <MudPaper Class="stat-card stat-dark">
-                    <div>
-                        <div class="stat-title">Önlenen Kayıp</div>
-                        <div class="stat-value">@OnlenenKayipText</div>
-                    </div>
-                    <MudButton Variant="Variant.Filled"
-                               Color="Color.Primary"
-                               Class="stat-button"
-                               Style="background-color: white; color: #0b1020;">
-                        Detayları İncele
-                    </MudButton>
-                </MudPaper>
-            </MudItem>
-
-            <!-- Meteorolojik Bilgiler -->
-            <MudItem xs="12" sm="6" md="3">
-                <MudPaper Class="stat-card stat-dark">
-                    <div>
-                        <div class="stat-title">Meteorolojik Bilgiler</div>
-                        <div class="stat-value">@MeteoText</div>
-                    </div>
-                    <MudButton Variant="Variant.Filled"
-                               Color="Color.Primary"
-                               Class="stat-button"
-                               Style="background-color: white; color: #0b1020;"
-                               Href="/analytics">
-                        Detayları İncele
-                    </MudButton>
-                </MudPaper>
-            </MudItem>
-
-            <!-- Aylık Rapor -->
-            <MudItem xs="12" sm="6" md="3">
-                <MudPaper Class="stat-card stat-dark">
-                    <div>
-                        <div class="stat-title">Aylık Rapor</div>
-                        <div class="stat-value">Hazırlanıyor</div>
-                    </div>
-                    <MudButton Variant="Variant.Filled"
-                               Color="Color.Primary"
-                               Class="stat-button"
-                               Style="background-color: white; color: #0b1020;"
-                               Href="/reports">
-                        Detayları İncele
-                    </MudButton>
                 </MudPaper>
             </MudItem>
         </MudGrid>
 
-        @if (SonKritikAlert is not null)
-        {
-            <!-- Altta banner -->
-            <MudPaper Class="bottom-alert-bar d-flex align-center">
-                <div class="left-pill d-flex align-center">
-                    <MudIcon Icon="@Icons.Material.Filled.Air" Size="Size.Medium" Class="mr-2" />
-                    <MudText Typo="Typo.body2">
-                        T@SonKritikAlert.TurbineId : Riskli Uyarı
-                    </MudText>
+        <MudPaper Elevation="0" Class="pa-6 rounded-lg border-solid border-1 mud-border-lines-default">
+            <div class="d-flex justify-space-between align-center mb-4">
+                <MudText Typo="Typo.h6"><b>Üretim Karşılaştırması (Saatlik)</b></MudText>
+                <div class="d-flex gap-4">
+                    <div class="d-flex align-center">
+                        <div style="width: 16px; height: 16px; background-color: rgba(33, 150, 243, 0.3); border-radius: 4px; margin-right: 8px;"></div>
+                        <MudText Typo="Typo.caption">Beklenen (Kayıp)</MudText>
+                    </div>
+                    <div class="d-flex align-center">
+                        <div style="width: 16px; height: 16px; background-color: #ff9800; border-radius: 4px; margin-right: 8px;"></div>
+                        <MudText Typo="Typo.caption">Gerçekleşen (Üretim)</MudText>
+                    </div>
                 </div>
-                <div class="right-pill">
-                    <MudText Typo="Typo.body2">
-                        @SonKritikAlert.Message
-                    </MudText>
-                </div>
-            </MudPaper>
-        }
+            </div>
+
+            <MudChart ChartType="ChartType.Bar"
+                      ChartSeries="@Series"
+                      XAxisLabels="@XAxisLabels"
+                      Width="100%"
+                      Height="400px"
+                      ChartOptions="@chartOptions"
+                      />
+        </MudPaper>
     }
+
 </MudContainer>
 
-<style>
-    .stat-card {
-        border-radius: 18px;
-        padding: 18px 20px;
-        color: white;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        height: 150px;
-        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.25);
-    }
-
-    .stat-danger {
-        background-color: #e53935;
-    }
-
-    .stat-success {
-        background-color: #00c853;
-    }
-
-    .stat-dark {
-        background-color: #02061a;
-    }
-
-    .stat-title {
-        font-size: 0.9rem;
-        font-weight: 500;
-        opacity: 0.9;
-        margin-bottom: 4px;
-    }
-
-    .stat-value {
-        font-size: 1.8rem;
-        font-weight: 700;
-        letter-spacing: 0.03em;
-    }
-
-    .stat-button {
-        margin-top: 12px;
-        align-self: flex-start;
-        border-radius: 999px;
-        font-size: 0.8rem;
-        padding: 4px 18px;
-        text-transform: none;
-    }
-
-    .bottom-alert-bar {
-        background-color: #f3f4f6;
-        border-radius: 999px;
-        padding: 10px 18px;
-    }
-
-    .left-pill {
-        background-color: #e53935;
-        color: white;
-        border-radius: 999px;
-        padding: 6px 16px;
-        margin-right: 12px;
-        white-space: nowrap;
-    }
-
-    .right-pill {
-        background-color: white;
-        border-radius: 999px;
-        padding: 6px 16px;
-        flex: 1;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        color: #111827;
-    }
-
-    @@media (max-width: 600px) {
-        .bottom-alert-bar
-
-    {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .left-pill {
-        margin-bottom: 8px;
-    }
-
-    .right-pill {
-        white-space: normal;
-    }
-
-    }
-</style>
-
 @code {
-    private DashboardDto? dashboardData;
-    private List<AlertDto>? alerts;
+    private DashboardDto dashboardData = new();
     private bool loading = true;
 
-    protected override async Task OnInitializedAsync()
-    {
-        await LoadData();
-    }
+    // Grafik Verileri
+    public List<ChartSeries> Series = new();
+    public string[] XAxisLabels = Array.Empty<string>();
 
-    private async Task LoadData()
+    // Kart Hesaplamaları
+    private double TotalBeklenen = 0;
+    private double GunSonuTahmini = 0;
+
+    // Grafik Ayarları
+    private ChartOptions chartOptions = new ChartOptions()
+        {
+            YAxisLines = true,
+            ChartPalette = new string[] { "#ff9800", "rgba(33, 150, 243, 0.3)" }
+        };
+
+    protected override async Task OnInitializedAsync()
     {
         loading = true;
         try
         {
-            dashboardData = await ApiService.GetDashboardAsync();
-            var alertList = await ApiService.GetAlertsAsync();
-            alerts = alertList?
-                .OrderByDescending(a => a.Timestamp)
-                .ToList();
+            var data = await ApiService.GetDashboardAsync();
+            if (data is null)
+            {
+                loading = false;
+                return;
+            }
+
+            dashboardData = data;
+
+            // Güvenli koleksiyon al
+            var gercekles = data.GerceklesUretimSerisi ?? new List<double>();
+            var beklenen = data.BeklenenUretimSerisi ?? new List<double>();
+            var labels = data.SaatEtiketleri ?? new List<string>();
+
+            int count = Math.Min(gercekles.Count, beklenen.Count);
+
+            if (count == 0)
+            {
+                Series.Clear();
+                XAxisLabels = Array.Empty<string>();
+                TotalBeklenen = 0;
+                GunSonuTahmini = 0;
+                return;
+            }
+
+            // Label sayısını da güvenli tut
+            XAxisLabels = labels.Take(count).ToArray();
+
+            // 1. Seri: Gerçekleşen
+            var series1Data = gercekles.Take(count).ToArray();
+            var series1 = new ChartSeries { Name = "Gerçekleşen", Data = series1Data };
+
+            // 2. Seri: Beklenen - Gerçekleşen (kayıp/fark)
+            var farkData = new double[count];
+            for (int i = 0; i < count; i++)
+            {
+                double b = beklenen[i];
+                double g = gercekles[i];
+                double fark = b - g;
+                farkData[i] = fark > 0 ? fark : 0;
+            }
+            var series2 = new ChartSeries { Name = "Kayıp/Fark", Data = farkData };
+
+            Series.Clear();
+            Series.Add(series1);
+            Series.Add(series2);
+
+            // Kart Verileri
+            TotalBeklenen = beklenen.Take(count).Sum();
+            GunSonuTahmini = TotalBeklenen * 1.1; // örnek tahmin mantığı
         }
         catch (Exception ex)
         {
-            Snackbar.Add("Hata: " + ex.Message, Severity.Error);
+            Snackbar.Add("Veri hatası: " + ex.Message, Severity.Error);
         }
         finally
         {
             loading = false;
-            StateHasChanged();
         }
     }
-
-    private AlertDto? SonKritikAlert =>
-        alerts?.FirstOrDefault(a => a.Severity >= 3) ?? alerts?.FirstOrDefault();
-
-    private string EmreAmadelikText =>
-        (dashboardData is null || dashboardData.ToplamTurbinSayisi == 0)
-            ? "-"
-            : $"{dashboardData.AktifTurbinSayisi}/{dashboardData.ToplamTurbinSayisi}";
-
-    private string GunBeklentisiText
-    {
-        get
-        {
-            if (dashboardData is null) return "-";
-            double gercek = dashboardData.ToplamUretimMW;
-            double hedef = dashboardData.BeklenenUretimSerisi?.LastOrDefault() ?? gercek;
-            return $"{gercek:0.#}/{hedef:0.#} Mw";
-        }
-    }
-
-    private string VerimText =>
-        dashboardData is null ? "-" : $"{dashboardData.VerimlilikYuzdesi:0}%";
-
-    private string OnlenenKayipText
-    {
-        get
-        {
-            if (dashboardData?.GerceklesUretimSerisi == null ||
-                dashboardData.BeklenenUretimSerisi == null)
-                return "0 Mw";
-
-            double beklenen = dashboardData.BeklenenUretimSerisi.Sum();
-            double gercek = dashboardData.GerceklesUretimSerisi.Sum();
-            double fark = Math.Max(0, beklenen - gercek);
-
-            return $"{fark:0} Mw";
-        }
-    }
-
-    private string MeteoText => "Fırtına";
 }

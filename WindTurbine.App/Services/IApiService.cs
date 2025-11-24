@@ -10,6 +10,7 @@ namespace WindTurbine.App.Services
 {
     public interface IApiService
     {
+        Task<AvailabilityDto> GetAvailabilityAsync();
         Task<bool> CreateReportAsync(ReportDto report);
         Task<List<WeatherForecastDto>> GetWeatherForecastAsync();
         Task<List<ReportDto>> GetReportsAsync();
