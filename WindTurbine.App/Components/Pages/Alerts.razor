@@ -1,154 +1,180 @@
 ﻿@page "/alerts"
 @using WindTurbine.App.Services
 @using WindTurbine.DTOs.Alerts
-@using ClosedXML.Excel
-@using System.IO
+@using WindTurbine.DTOs.Turbines
+@using MudBlazor
 @inject IApiService ApiService
 @inject ISnackbar Snackbar
-@inject IJSRuntime JS
 
-<PageTitle>Alarm Geçmişi</PageTitle>
+<PageTitle>Akıllı Alarm Merkezi</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.Large" Class="mt-6 mb-6">
+<MudContainer MaxWidth="MaxWidth.Large" Class="mb-6">
 
-    <div class="d-flex justify-content-between align-items-center mb-6">
+    <div class="d-flex justify-space-between align-center mb-6 flex-wrap gap-3">
         <div>
-            <MudText Typo="Typo.h5" Color="Color.Primary" Style="font-weight: 700;">Alarm Yönetimi</MudText>
-            <MudText Typo="Typo.body2" Class="mud-text-secondary">Tüm sistem uyarıları ve olay geçmişi</MudText>
+            <div class="d-flex align-center gap-2">
+                <MudIcon Icon="@Icons.Material.Filled.NotificationsActive" Color="Color.Error" Size="Size.Large" />
+                <MudText Typo="Typo.h4" Color="Color.Primary" Style="font-weight: 800;">Alarm Yönetimi</MudText>
+            </div>
+            <MudText Typo="Typo.body1" Class="mud-text-secondary mt-1">
+                Yapay zeka destekli arıza tespiti ve müdahale önerileri.
+            </MudText>
         </div>
-        <div class="d-flex gap-2">
-            <MudButton Variant="Variant.Outlined"
-                       StartIcon="@Icons.Material.Filled.FileDownload"
-                       Color="Color.Success"
-                       OnClick="ExcelIndir">Excel İndir</MudButton>
 
-            <MudButton Variant="Variant.Filled"
-                       StartIcon="@Icons.Material.Filled.Refresh"
-                       Color="Color.Primary"
-                       OnClick="VerileriYukle">Yenile</MudButton>
+        <div class="d-flex gap-2">
+            <MudChip T="string" Color="Color.Error" Variant="Variant.Filled" OnClick="@(() => FilterAlerts("Critical"))">Kritik</MudChip>
+            <MudChip T="string" Color="Color.Warning" Variant="Variant.Filled" OnClick="@(() => FilterAlerts("Warning"))">Uyarı</MudChip>
+            <MudChip T="string" Color="Color.Default" Variant="Variant.Outlined" OnClick="@(() => FilterAlerts("All"))">Tümü</MudChip>
         </div>
     </div>
 
-    <MudTable Items="@alerts"
-              Dense="true"
-              Hover="true"
-              Bordered="false"
-              Striped="true"
-              Filter="new Func<AlertDto,bool>(FilterFunc)"
-              Loading="@yukleniyor"
-              Elevation="3"
-              Class="rounded-lg"
-              RowsPerPage="15">
+    @if (_loading)
+    {
+        <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-6" />
+        <MudText Align="Align.Center" Typo="Typo.h6" Class="mud-text-secondary">Alarmlar analiz ediliyor...</MudText>
+    }
+    else
+    {
+        <MudGrid>
+            @foreach (var alert in _filteredAlerts)
+            {
+                <MudItem xs="12" md="6" lg="4">
+                    <MudCard Elevation="4" Class="rounded-xl hover-effect h-100 position-relative overflow-hidden">
 
-        <ToolBarContent>
-            <MudText Typo="Typo.h6" Class="mt-1">Olay Kayıtları</MudText>
-            <MudSpacer />
-            <MudTextField @bind-Value="searchString" Placeholder="Ara (Mesaj, Durum...)" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
-        </ToolBarContent>
+                        <div class="alert-card-bg" style="@GetBgStyle(alert.SeverityStr)"></div>
 
-        <HeaderContent>
-            <MudTh><MudTableSortLabel SortBy="new Func<AlertDto, object>(x=>x.AlertId)">ID</MudTableSortLabel></MudTh>
-            <MudTh><MudTableSortLabel SortBy="new Func<AlertDto, object>(x=>x.Timestamp)">Zaman</MudTableSortLabel></MudTh>
-            <MudTh>Mesaj</MudTh>
-            <MudTh><MudTableSortLabel SortBy="new Func<AlertDto, object>(x=>x.Severity)">Seviye</MudTableSortLabel></MudTh>
-            <MudTh>Güven Skoru</MudTh>
-            <MudTh>Durum</MudTh>
-            <MudTh>İşlemler</MudTh>
-        </HeaderContent>
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <div class="d-flex justify-space-between w-100 align-start">
 
-        <RowTemplate>
-            <MudTd DataLabel="ID">@context.AlertId</MudTd>
+                                    <div>
+                                        <div class="d-flex align-center gap-2 mb-1">
+                                            @if (alert.SeverityStr == "Critical" || alert.SeverityStr == "Error")
+                                            {
+                                                <MudIcon Icon="@Icons.Material.Filled.ReportGmailerrorred" Color="Color.Error" />
+                                                <MudText Typo="Typo.h6" Color="Color.Error" Style="font-weight:700;">KRİTİK</MudText>
+                                            }
+                                            else
+                                            {
+                                                <MudIcon Icon="@Icons.Material.Filled.Warning" Color="Color.Warning" />
+                                                <MudText Typo="Typo.h6" Color="Color.Warning" Style="font-weight:700;">UYARI</MudText>
+                                            }
+                                        </div>
+                                        <MudText Typo="Typo.caption" Class="mud-text-secondary">@alert.Timestamp.ToString("dd.MM.yyyy HH:mm")</MudText>
+                                    </div>
 
-            <MudTd DataLabel="Zaman">
-                <div class="d-flex flex-column">
-                    <MudText Typo="Typo.body2" Style="font-weight:bold;">@context.Timestamp.ToLocalTime().ToString("dd.MM.yyyy")</MudText>
-                    <MudText Typo="Typo.caption">@context.Timestamp.ToLocalTime().ToString("HH:mm:ss")</MudText>
-                </div>
-            </MudTd>
+                                    <MudChip T="string" Color="Color.Primary" Variant="Variant.Outlined" Size="Size.Small" Style="font-weight:bold; border-width:2px;">
+                                        @GetTurbineName(alert.TurbineId)
+                                    </MudChip>
 
-            <MudTd DataLabel="Mesaj">
-                <MudText Typo="Typo.body2" Style="font-weight: 500;">@context.Message</MudText>
-                <MudText Typo="Typo.caption" Class="mud-text-secondary">Türbin ID: @context.TurbineId</MudText>
-            </MudTd>
+                                </div>
+                            </CardHeaderContent>
+                        </MudCardHeader>
 
-            <MudTd DataLabel="Seviye">
-                @if (context.Severity >= 3)
-                {
-                    <MudChip T="string" Color="Color.Error" Size="Size.Small" Icon="@Icons.Material.Filled.Report">KRİTİK</MudChip>
-                }
-                else if (context.Severity == 2)
-                {
-                    <MudChip T="string" Color="Color.Warning" Size="Size.Small" Icon="@Icons.Material.Filled.Warning">ORTA</MudChip>
-                }
-                else
-                {
-                    <MudChip T="string" Color="Color.Info" Size="Size.Small" Icon="@Icons.Material.Filled.Info">DÜŞÜK</MudChip>
-                }
-            </MudTd>
+                        <MudCardContent Class="py-2">
 
-            <MudTd DataLabel="Güven">
-                <div class="d-flex align-center">
-                    <MudProgressLinear Color="@(context.Confidence > 0.8 ? Color.Success : Color.Warning)" Value="@((double)(context.Confidence * 100))" Class="mr-2" Style="width: 60px;" />
-                    <MudText Typo="Typo.caption">@((context.Confidence * 100).ToString("F0"))%</MudText>
-                </div>
-            </MudTd>
+                            <MudText Typo="Typo.subtitle1" Style="font-weight:600; min-height:50px;">
+                                @alert.Message
+                            </MudText>
 
-            <MudTd DataLabel="Durum">
-                @if (context.Status == "Yeni")
-                {
-                    <MudChip T="string" Color="Color.Error" Variant="Variant.Text" Size="Size.Small">YENİ</MudChip>
-                }
-                else if (context.Status == "Onaylandı" || context.Status == "Çözüldü")
-                {
-                    <MudChip T="string" Color="Color.Success" Variant="Variant.Text" Size="Size.Small">ÇÖZÜLDÜ</MudChip>
-                }
-                else
-                {
-                    <MudText Typo="Typo.body2">@context.Status</MudText>
-                }
-            </MudTd>
+                            <MudDivider Class="my-3" />
 
-            <MudTd DataLabel="İşlemler">
-                <MudIconButton Icon="@Icons.Material.Filled.CheckCircle"
-                               Color="Color.Success"
-                               Size="Size.Small"
-                               Title="Çözüldü Olarak İşaretle"
-                               Disabled="@(context.Status == "Çözüldü")"
-                               OnClick="@(() => AlarmCozuldu(context))" />
+                            <div class="d-flex gap-3">
+                                <MudIcon Icon="@Icons.Material.Filled.Psychology" Color="Color.Info" Size="Size.Medium" />
+                                <div>
+                                    <div class="d-flex justify-space-between align-center w-100 mb-1">
+                                        <MudText Typo="Typo.caption" Style="font-weight:800; color:#1565c0; letter-spacing:0.5px;">AI GÜVEN ORANI</MudText>
+                                        <MudText Typo="Typo.caption" Style="font-weight:800; color:#1565c0;">%@((alert.Confidence * 100).ToString("F0"))</MudText>
+                                    </div>
 
-                <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                               Color="Color.Default"
-                               Size="Size.Small"
-                               OnClick="@(() => AlarmSil(context))" />
-            </MudTd>
-        </RowTemplate>
+                                    <MudProgressLinear Color="@GetConfidenceColor(alert.Confidence)" Value="@(alert.Confidence * 100)" Class="mb-2 rounded" Style="height:6px;" />
 
-        <PagerContent>
-            <MudTablePager RowsPerPageString="Sayfa başına kayıt:" />
-        </PagerContent>
-    </MudTable>
+                                    <MudText Typo="Typo.caption" Style="font-weight:800; color:#e65100; letter-spacing:0.5px;">ÖNERİLEN AKSİYON:</MudText>
+                                    <MudText Typo="Typo.body2" Style="line-height:1.3; font-weight:500;">
+                                        @GetAiRecommendation(alert.Message, alert.SeverityStr)
+                                    </MudText>
+                                </div>
+                            </div>
 
+                        </MudCardContent>
+
+                        <MudCardActions Class="px-4 pb-4 pt-2">
+                            <MudButton Variant="Variant.Filled"
+                                       Color="@GetButtonColor(alert.SeverityStr)"
+                                       FullWidth="true"
+                                       OnClick="@(() => OnayAl(alert))"
+                                       StartIcon="@Icons.Material.Filled.Build">
+                                @(alert.Status == "Active" ? "Müdahale Başlat" : "Tamamlandı")
+                            </MudButton>
+                        </MudCardActions>
+
+                    </MudCard>
+                </MudItem>
+            }
+        </MudGrid>
+    }
 </MudContainer>
 
+<style>
+    .hover-effect {
+        transition: all 0.3s ease;
+    }
+
+        .hover-effect:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.15) !important;
+        }
+
+    .alert-card-bg {
+        position: absolute;
+        top: -40px;
+        right: -40px;
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        opacity: 0.1;
+        z-index: 0;
+        pointer-events: none;
+    }
+</style>
+
 @code {
-    private List<AlertDto> alerts = new List<AlertDto>();
-    private bool yukleniyor = true;
-    private string searchString = "";
+    private List<AlertViewModel> _allAlerts = new();
+    private List<AlertViewModel> _filteredAlerts = new();
+    private List<TurbineDto> _turbines = new();
+    private bool _loading = true;
+
+    // Arayüz için genişletilmiş Model
+    public class AlertViewModel : AlertDto
+    {
+        public string SeverityStr => Severity == 1 ? "Error" : "Warning"; // 1: Error, 2: Warning
+    }
 
     protected override async Task OnInitializedAsync()
     {
-        await VerileriYukle();
-    }
-
-    private async Task VerileriYukle()
-    {
-        yukleniyor = true;
+        _loading = true;
         try
         {
-            var veri = await ApiService.GetAlertsAsync();
-            if (veri != null)
+            // 1. Türbinleri Çek (İsim Eşleşmesi İçin)
+            _turbines = await ApiService.GetTurbinesAsync() ?? new List<TurbineDto>();
+
+            // 2. Alarmları Çek
+            var alerts = await ApiService.GetAlertsAsync();
+            if (alerts != null)
             {
-                alerts = veri.OrderByDescending(x => x.Timestamp).ToList();
+                // DTO'yu ViewModele çevir ve ters sırala (En yeni en üstte)
+                _allAlerts = alerts.Select(a => new AlertViewModel
+                    {
+                        AlertId = a.AlertId,
+                        Message = a.Message,
+                        Severity = a.Severity,
+                        Timestamp = a.Timestamp,
+                        TurbineId = a.TurbineId,
+                        Confidence = a.Confidence,
+                        Status = a.Status
+                    }).OrderByDescending(a => a.Timestamp).ToList();
+
+                _filteredAlerts = _allAlerts;
             }
         }
         catch (Exception ex)
@@ -157,83 +183,73 @@
         }
         finally
         {
-            yukleniyor = false;
+            _loading = false;
         }
     }
 
-  
-    private async Task ExcelIndir()
+    // --- YARDIMCI METOTLAR ---
+
+    private string GetTurbineName(int turbineId)
     {
-        try
-        {
-            using (var workbook = new XLWorkbook())
-            {
-                var worksheet = workbook.Worksheets.Add("Alarmlar");
-
-               
-                worksheet.Cell(1, 1).Value = "ID";
-                worksheet.Cell(1, 2).Value = "Zaman";
-                worksheet.Cell(1, 3).Value = "Mesaj";
-                worksheet.Cell(1, 4).Value = "Seviye";
-                worksheet.Cell(1, 5).Value = "Durum";
-                worksheet.Cell(1, 6).Value = "Güven Skoru";
-
-               
-                for (int i = 0; i < alerts.Count; i++)
-                {
-                    var alert = alerts[i];
-                    worksheet.Cell(i + 2, 1).Value = alert.AlertId;
-                    worksheet.Cell(i + 2, 2).Value = alert.Timestamp.ToLocalTime().ToString();
-                    worksheet.Cell(i + 2, 3).Value = alert.Message;
-                    worksheet.Cell(i + 2, 4).Value = alert.Severity;
-                    worksheet.Cell(i + 2, 5).Value = alert.Status;
-                    worksheet.Cell(i + 2, 6).Value = alert.Confidence;
-                }
-
-              
-                using (var stream = new MemoryStream())
-                {
-                    workbook.SaveAs(stream);
-                    var content = stream.ToArray();
-
-                    
-                    using var streamRef = new DotNetStreamReference(stream: new MemoryStream(content));
-                    await JS.InvokeVoidAsync("downloadFileFromStream", "Alarmlar_Raporu.xlsx", streamRef);
-                }
-            }
-            Snackbar.Add("Excel dosyası indirildi!", Severity.Success);
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add("Excel hatası: " + ex.Message, Severity.Error);
-        }
+        var t = _turbines.FirstOrDefault(x => x.TurbineId == turbineId);
+        return t != null ? t.Name : $"T-{turbineId:00}";
     }
 
-   
-    private async Task AlarmSil(AlertDto item)
+    private void FilterAlerts(string type)
     {
-       
-        alerts.Remove(item);
-        Snackbar.Add("Alarm silindi (Demo)", Severity.Info);
+        if (type == "All")
+            _filteredAlerts = _allAlerts;
+        else if (type == "Critical")
+            _filteredAlerts = _allAlerts.Where(x => x.SeverityStr == "Critical" || x.SeverityStr == "Error").ToList();
+        else
+            _filteredAlerts = _allAlerts.Where(x => x.SeverityStr == "Warning").ToList();
     }
 
-    
-    private async Task AlarmCozuldu(AlertDto item)
+    private string GetBgStyle(string severity)
     {
-       
-        item.Status = "Çözüldü";
+        if (severity == "Critical" || severity == "Error")
+            return "background: radial-gradient(circle, #f44336 0%, rgba(255,255,255,0) 70%);";
 
-        
-
-        Snackbar.Add("Alarm çözüldü olarak işaretlendi!", Severity.Success);
+        return "background: radial-gradient(circle, #ff9800 0%, rgba(255,255,255,0) 70%);";
     }
 
-    private bool FilterFunc(AlertDto element)
+    private Color GetButtonColor(string severity)
     {
-        if (string.IsNullOrWhiteSpace(searchString)) return true;
-        if (element.Message.Contains(searchString, StringComparison.OrdinalIgnoreCase)) return true;
-        if (element.Status.Contains(searchString, StringComparison.OrdinalIgnoreCase)) return true;
-        if ($"{element.TurbineId}".Contains(searchString)) return true;
-        return false;
+        return (severity == "Critical" || severity == "Error") ? Color.Error : Color.Warning;
+    }
+
+    private Color GetConfidenceColor(double conf)
+    {
+        if (conf > 0.85) return Color.Success;
+        if (conf > 0.60) return Color.Warning;
+        return Color.Error;
+    }
+
+    // --- YAPAY ZEKA YORUM MANTIĞI ---
+    private string GetAiRecommendation(string message, string severity)
+    {
+        if (message.Contains("Sıcaklık") || message.Contains("Temperature"))
+            return "Soğutma sistemini kontrol edin ve yükü %20 azaltın. Yağ seviyesi sensörlerini doğrulayın.";
+
+        if (message.Contains("Titreşim") || message.Contains("Vibration"))
+            return "Rulman yataklarında aşınma ihtimali yüksek (%89). Acil durdurma ve fiziksel inceleme önerilir.";
+
+        if (message.Contains("Yağ") || message.Contains("Oil"))
+            return "Sızıntı tespit edildi. Basınç valflerini kapatın ve bakım ekibini yönlendirin.";
+
+        if (message.Contains("Voltaj") || message.Contains("Voltage"))
+            return "Şebeke dalgalanması algılandı. İnvertör ayarlarını kontrol edin, reaktif güç dengesini sağlayın.";
+
+        // Varsayılan öneriler
+        if (severity == "Critical" || severity == "Error")
+            return "Kritik arıza. Türbini güvenli moda alın ve saha ekibine acil iş emri oluşturun.";
+
+        return "Sistemi izlemeye devam edin. Tekrarlarsa bakım planına ekleyin.";
+    }
+
+    private void OnayAl(AlertViewModel alert)
+    {
+        Snackbar.Add($"Alarm ID: {alert.AlertId} için müdahale başlatıldı.", Severity.Success);
+        // Burada veritabanı güncelleme işlemi yapılabilir.
     }
 }

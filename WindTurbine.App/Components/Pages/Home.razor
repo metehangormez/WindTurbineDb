@@ -6,135 +6,343 @@
 @inject IApiService ApiService
 @inject ISnackbar Snackbar
 
-<MudContainer MaxWidth="MaxWidth.Large" Class="mt-6 mb-6">
+<MudContainer MaxWidth="MaxWidth.Large" Class="mb-8">
 
-    <div class="d-flex justify-content-between align-items-center mb-6">
+    <div class="d-flex justify-space-between align-end mb-8 pt-4 welcome-section">
         <div>
-            <MudText Typo="Typo.h5" Style="font-weight: 700; color: #2c3e50;">Genel Bakış</MudText>
-            <MudText Typo="Typo.body2" Class="mud-text-secondary">Son güncelleme: @DateTime.Now.ToString("HH:mm")</MudText>
+            <MudText Typo="Typo.h4" Style="font-weight: 800; color: #1a237e; letter-spacing: -1px;">
+                Merhaba, Yönetici
+            </MudText>
+            <MudText Typo="Typo.body1" Class="mud-text-secondary mt-1">
+                Saha performansın anlık olarak izleniyor. Sistem stabil.
+            </MudText>
         </div>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Refresh" OnClick="VerileriYukle" Disabled="@yukleniyor">
-            @(yukleniyor ? "Yükleniyor..." : "Yenile")
-        </MudButton>
+        <div class="d-flex align-center gap-3">
+            <MudChip T="string" Color="Color.Success" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Wifi" Size="Size.Small" Class="py-4 px-3" Style="font-weight:600;">CANLI</MudChip>
+            <MudIconButton Icon="@Icons.Material.Filled.Refresh"
+                           Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           Size="Size.Medium"
+                           OnClick="VerileriYukle"
+                           Class="refresh-btn"
+                           Disabled="@yukleniyor" />
+        </div>
     </div>
 
     <MudGrid Class="mb-6">
+
         <MudItem xs="12" sm="6" md="3">
-            <MudPaper Elevation="0" Class="pa-4 rounded-lg border-solid border-1 mud-border-lines-default d-flex flex-column justify-space-between" Style="height: 100%;">
-                <div class="d-flex justify-space-between align-start">
-                    <div>
-                        <MudText Typo="Typo.caption" Class="mud-text-secondary">RİSKLİ UYARILAR</MudText>
-                        <MudText Typo="Typo.h4" Color="Color.Error" Style="font-weight: 700;">@dashboardData.RiskliUyariSayisi</MudText>
-                    </div>
-                    <MudAvatar Color="Color.Error" Variant="Variant.Filled" Size="Size.Medium" Rounded="true">
-                        <MudIcon Icon="@Icons.Material.Filled.PriorityHigh" />
-                    </MudAvatar>
+            <div class="metric-card cursor-pointer" onclick="location.href='/alerts'">
+                <div class="metric-icon-bg red-gradient">
+                    <MudIcon Icon="@Icons.Material.Filled.PriorityHigh" Size="Size.Medium" Style="color:white;" />
                 </div>
-                <MudButton Variant="Variant.Text" Color="Color.Error" Size="Size.Small" FullWidth="true" Class="mt-2 justify-start px-0" Href="/alerts">Uyarıları Gör</MudButton>
-            </MudPaper>
+                <div>
+                    <MudText Typo="Typo.caption" Style="color:#e53935; font-weight:700; letter-spacing:1px;">KRİTİK</MudText>
+                    <MudText Typo="Typo.h4" Style="font-weight:800; color:#263238;">@dashboardData.RiskliUyariSayisi</MudText>
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">Aktif Alarm</MudText>
+                </div>
+                <div class="metric-bg-shape red-shape"></div>
+            </div>
         </MudItem>
 
         <MudItem xs="12" sm="6" md="3">
-            <MudPaper Elevation="0" Class="pa-4 rounded-lg border-solid border-1 mud-border-lines-default d-flex flex-column justify-space-between" Style="height: 100%;">
-                <div class="d-flex justify-space-between align-start">
-                    <div>
-                        <MudText Typo="Typo.caption" Class="mud-text-secondary">AI ÖNERİLERİ</MudText>
-                        <MudText Typo="Typo.h4" Color="Color.Success" Style="font-weight: 700;">@dashboardData.ToplamOneriSayisi</MudText>
-                    </div>
-                    <MudAvatar Color="Color.Success" Variant="Variant.Filled" Size="Size.Medium" Rounded="true">
-                        <MudIcon Icon="@Icons.Material.Filled.AutoAwesome" />
-                    </MudAvatar>
+            <div class="metric-card cursor-pointer" onclick="location.href='/analytics'">
+                <div class="metric-icon-bg green-gradient">
+                    <MudIcon Icon="@Icons.Material.Filled.AutoAwesome" Size="Size.Medium" Style="color:white;" />
                 </div>
-                <MudButton Variant="Variant.Text" Color="Color.Success" Size="Size.Small" FullWidth="true" Class="mt-2 justify-start px-0">İncele</MudButton>
-            </MudPaper>
+                <div>
+                    <MudText Typo="Typo.caption" Style="color:#43a047; font-weight:700; letter-spacing:1px;">YAPAY ZEKA</MudText>
+                    <MudText Typo="Typo.h4" Style="font-weight:800; color:#263238;">@dashboardData.ToplamOneriSayisi</MudText>
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">Yeni Öneri</MudText>
+                </div>
+                <div class="metric-bg-shape green-shape"></div>
+            </div>
         </MudItem>
 
         <MudItem xs="12" sm="6" md="3">
-            <MudPaper Elevation="0" Class="pa-4 rounded-lg border-solid border-1 mud-border-lines-default d-flex flex-column justify-space-between" Style="height: 100%;">
-                <div class="d-flex justify-space-between align-start">
-                    <div>
-                        <MudText Typo="Typo.caption" Class="mud-text-secondary">AKTİF TÜRBİNLER</MudText>
-                        <MudText Typo="Typo.h4" Color="Color.Info" Style="font-weight: 700;">@dashboardData.AktifTurbinSayisi</MudText>
-                    </div>
-                    <MudAvatar Color="Color.Info" Variant="Variant.Filled" Size="Size.Medium" Rounded="true">
-                        <MudIcon Icon="@Icons.Material.Filled.WindPower" />
-                    </MudAvatar>
+            <div class="metric-card cursor-pointer" onclick="location.href='/turbines'">
+                <div class="metric-icon-bg blue-gradient">
+                    <MudIcon Icon="@Icons.Material.Filled.WindPower" Size="Size.Medium" Style="color:white;" />
                 </div>
-                <MudButton Variant="Variant.Text" Color="Color.Info" Size="Size.Small" FullWidth="true" Class="mt-2 justify-start px-0" Href="/turbines">Detaylar</MudButton>
-            </MudPaper>
+                <div>
+                    <MudText Typo="Typo.caption" Style="color:#1e88e5; font-weight:700; letter-spacing:1px;">AKTİF ÜNİTE</MudText>
+                    <MudText Typo="Typo.h4" Style="font-weight:800; color:#263238;">@dashboardData.AktifTurbinSayisi</MudText>
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">Toplam @dashboardData.ToplamTurbinSayisi Türbin</MudText>
+                </div>
+                <div class="metric-bg-shape blue-shape"></div>
+            </div>
         </MudItem>
 
         <MudItem xs="12" sm="6" md="3">
-            <MudPaper Elevation="0" Class="pa-4 rounded-lg border-solid border-1 mud-border-lines-default d-flex flex-column justify-space-between" Style="height: 100%;">
-                <div class="d-flex justify-space-between align-start">
-                    <div>
-                        <MudText Typo="Typo.caption" Class="mud-text-secondary">GÜNLÜK ÜRETİM</MudText>
-                        <MudText Typo="Typo.h4" Color="Color.Warning" Style="font-weight: 700;">@dashboardData.ToplamUretimMW.ToString("F1") MW</MudText>
-                    </div>
-                    <MudAvatar Color="Color.Warning" Variant="Variant.Filled" Size="Size.Medium" Rounded="true">
-                        <MudIcon Icon="@Icons.Material.Filled.Bolt" />
-                    </MudAvatar>
+            <div class="metric-card cursor-pointer" onclick="location.href='/reports'">
+                <div class="metric-icon-bg orange-gradient">
+                    <MudIcon Icon="@Icons.Material.Filled.Bolt" Size="Size.Medium" Style="color:white;" />
                 </div>
-                <MudButton Variant="Variant.Text" Color="Color.Warning" Size="Size.Small" FullWidth="true" Class="mt-2 justify-start px-0" Href="/reports">Raporu Aç</MudButton>
-            </MudPaper>
+                <div>
+                    <MudText Typo="Typo.caption" Style="color:#fb8c00; font-weight:700; letter-spacing:1px;">ÜRETİM (MW)</MudText>
+                    <MudText Typo="Typo.h4" Style="font-weight:800; color:#263238;">@dashboardData.ToplamUretimMW.ToString("F1")</MudText>
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">Günlük Toplam</MudText>
+                </div>
+                <div class="metric-bg-shape orange-shape"></div>
+            </div>
         </MudItem>
     </MudGrid>
 
     <MudGrid>
-        <MudItem xs="12" md="8">
-            <MudPaper Elevation="0" Class="pa-4 rounded-lg border-solid border-1 mud-border-lines-default">
-                <MudText Typo="Typo.h6" Class="mb-4"><b>Günlük Enerji Üretimi</b></MudText>
-                <MudChart ChartType="ChartType.Line"
-                          ChartSeries="@Series"
-                          XAxisLabels="@XAxisLabels"
-                          Width="100%"
-                          Height="350px"
-                          ChartOptions="@chartOptions"></MudChart>
-            </MudPaper>
-        </MudItem>
 
-        <MudItem xs="12" md="4">
-            <MudPaper Elevation="0" Class="pa-0 rounded-lg border-solid border-1 mud-border-lines-default overflow-hidden" Style="height: 100%;">
-                <div class="pa-4 border-b-1 mud-border-lines-default d-flex justify-space-between align-center">
-                    <MudText Typo="Typo.h6" Style="font-weight: 600;">Son Alarmlar</MudText>
-                    <MudIconButton Icon="@Icons.Material.Filled.ArrowForward" Size="Size.Small" Href="/alerts" />
+        <MudItem xs="12" lg="8">
+            <MudPaper Class="pa-6 rounded-xl h-100" Elevation="3" Style="position:relative; overflow:hidden;">
+                <div class="d-flex justify-space-between align-center mb-6">
+                    <div>
+                        <MudText Typo="Typo.h6" Style="font-weight:800; color:#37474f;">Enerji Üretim Eğrisi</MudText>
+                        <MudText Typo="Typo.body2" Class="mud-text-secondary">Gerçekleşen vs Beklenen (Saatlik)</MudText>
+                    </div>
+                    <div class="d-flex gap-3">
+                        <div class="d-flex align-center gap-1">
+                            <div style="width:10px; height:10px; background:#ffa726; border-radius:50%;"></div>
+                            <MudText Typo="Typo.caption">Gerçekleşen</MudText>
+                        </div>
+                        <div class="d-flex align-center gap-1">
+                            <div style="width:10px; height:10px; background:#e0e0e0; border-radius:50%;"></div>
+                            <MudText Typo="Typo.caption">Beklenen</MudText>
+                        </div>
+                    </div>
                 </div>
 
-                <MudTable Items="@alerts" Hover="true" Elevation="0" Loading="@yukleniyor" LoadingProgressColor="Color.Primary" Dense="true" Striped="true" Height="340px" FixedHeader="true">
-                    <HeaderContent>
-                        <MudTh>Zaman</MudTh>
-                        <MudTh>Mesaj</MudTh>
-                        <MudTh>Seviye</MudTh>
-                    </HeaderContent>
-                    <RowTemplate>
-                        <MudTd DataLabel="Zaman">@context.Timestamp.ToLocalTime().ToString("HH:mm")</MudTd>
-                        <MudTd DataLabel="Mesaj">
-                            <MudText Typo="Typo.body2" Style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px;">
-                                @context.Message
-                            </MudText>
-                        </MudTd>
-                        <MudTd DataLabel="Seviye">
-                            <MudChip T="string" Color="@GetSeverityColor(context.Severity)" Size="Size.Small" Label="true">
-                                @GetSeverityText(context.Severity)
-                            </MudChip>
-                        </MudTd>
-                    </RowTemplate>
-                </MudTable>
+                @if (yukleniyor)
+                {
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="300px" Class="rounded-lg" />
+                }
+                else
+                {
+                    <MudChart ChartType="ChartType.Line"
+                              ChartSeries="@Series"
+                              XAxisLabels="@XAxisLabels"
+                              Width="100%"
+                              Height="350px"
+                              ChartOptions="@chartOptions" />
+                }
             </MudPaper>
         </MudItem>
+
+        <MudItem xs="12" lg="4">
+            <MudPaper Class="pa-0 rounded-xl h-100 overflow-hidden" Elevation="3">
+                <div class="pa-5 border-b d-flex justify-space-between align-center" style="background:#fcfcfc;">
+                    <MudText Typo="Typo.h6" Style="font-weight:800; color:#37474f;">Canlı Akış</MudText>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" EndIcon="@Icons.Material.Filled.ArrowForward" Href="/alerts" Size="Size.Small">Tümü</MudButton>
+                </div>
+
+                <div class="pa-0 scroll-container" style="max-height: 400px; overflow-y: auto;">
+                    @if (alerts.Any())
+                    {
+                        <MudList T="string" Dense="true" Class="py-0">
+                            @foreach (var alert in alerts)
+                            {
+                                <div class="d-flex align-start pa-4 border-b hover-bg transition-all">
+                                    <div class="mr-3 mt-1">
+                                        @if (alert.Severity >= 3)
+                                        {
+                                            <div class="status-dot red-pulse"></div>
+                                        }
+                                        else if (alert.Severity == 2)
+                                        {
+                                            <div class="status-dot orange-static"></div>
+                                        }
+                                        else
+                                        {
+                                            <div class="status-dot green-static"></div>
+                                        }
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex justify-space-between w-100">
+                                            <MudText Typo="Typo.subtitle2" Style="font-weight:600; color:#455a64;">@alert.Message</MudText>
+                                            <MudText Typo="Typo.caption" Class="mud-text-secondary ml-2" Style="white-space:nowrap;">@alert.Timestamp.ToString("HH:mm")</MudText>
+                                        </div>
+                                        <div class="d-flex align-center mt-1">
+                                            <MudIcon Icon="@Icons.Material.Filled.PrecisionManufacturing" Size="Size.Small" style="font-size:12px; color:#90a4ae;" class="mr-1" />
+                                            <MudText Typo="Typo.caption" Class="mud-text-secondary">Türbin #@alert.TurbineId</MudText>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </MudList>
+                    }
+                    else
+                    {
+                        <div class="d-flex flex-column align-center justify-center py-8">
+                            <MudIcon Icon="@Icons.Material.Filled.CheckCircleOutline" Size="Size.Large" Color="Color.Success" Style="opacity:0.5;" />
+                            <MudText Typo="Typo.body2" Class="mt-2 mud-text-secondary">Sistem normal, alarm yok.</MudText>
+                        </div>
+                    }
+                </div>
+            </MudPaper>
+        </MudItem>
+
     </MudGrid>
 
 </MudContainer>
 
+<style>
+    /* Karşılama Alanı Animasyonu */
+    .welcome-section {
+        animation: fadeInDown 0.8s ease-out;
+    }
+
+    @@keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Metrik Kartlar */
+    .metric-card {
+        background: white;
+        border-radius: 20px;
+        padding: 24px;
+        position: relative;
+        overflow: hidden;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        border: 1px solid rgba(0,0,0,0.02);
+    }
+
+        .metric-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+            border-color: transparent;
+        }
+
+    /* İkon Arka Planları */
+    .metric-icon-bg {
+        width: 56px;
+        height: 56px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+        z-index: 2;
+    }
+
+    .red-gradient {
+        background: linear-gradient(135deg, #ef5350 0%, #c62828 100%);
+    }
+
+    .green-gradient {
+        background: linear-gradient(135deg, #66bb6a 0%, #2e7d32 100%);
+    }
+
+    .blue-gradient {
+        background: linear-gradient(135deg, #42a5f5 0%, #1565c0 100%);
+    }
+
+    .orange-gradient {
+        background: linear-gradient(135deg, #ffa726 0%, #ef6c00 100%);
+    }
+
+    /* Dekoratif Arka Plan Şekilleri */
+    .metric-bg-shape {
+        position: absolute;
+        top: -30px;
+        right: -30px;
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        opacity: 0.1;
+        z-index: 1;
+        pointer-events: none;
+    }
+
+    .red-shape {
+        background: #c62828;
+    }
+
+    .green-shape {
+        background: #2e7d32;
+    }
+
+    .blue-shape {
+        background: #1565c0;
+    }
+
+    .orange-shape {
+        background: #ef6c00;
+    }
+
+    /* Liste Stilleri */
+    .hover-bg:hover {
+        background-color: #f5f7fa;
+    }
+
+    .status-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        border: 2px solid white;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .red-pulse {
+        background-color: #f44336;
+        animation: pulse 2s infinite;
+    }
+
+    .orange-static {
+        background-color: #ff9800;
+    }
+
+    .green-static {
+        background-color: #4caf50;
+    }
+
+    @@keyframes pulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.7);
+        }
+
+        70% {
+            box-shadow: 0 0 0 6px rgba(244, 67, 54, 0);
+        }
+
+        100% {
+            box-shadow: 0 0 0 0 rgba(244, 67, 54, 0);
+        }
+    }
+
+    .cursor-pointer {
+        cursor: pointer;
+    }
+
+    .refresh-btn:hover {
+        transform: rotate(180deg);
+        transition: transform 0.5s ease;
+    }
+</style>
+
 @code {
-    private DashboardDto dashboardData = new DashboardDto(); 
+    private DashboardDto dashboardData = new DashboardDto();
     private List<AlertDto> alerts = new List<AlertDto>();
     private bool yukleniyor = true;
 
-    
+    // Grafik Verileri
     public List<ChartSeries> Series { get; set; } = new List<ChartSeries>();
     public string[] XAxisLabels { get; set; } = { };
-    private ChartOptions chartOptions = new ChartOptions() { YAxisLines = true };
+    private ChartOptions chartOptions = new ChartOptions()
+        {
+            YAxisLines = true,
+            ChartPalette = new string[] { "#ffa726", "#e0e0e0" }, // Turuncu (Gerçekleşen), Gri (Beklenen)
+            LineStrokeWidth = 3
+        };
 
     protected override async Task OnInitializedAsync()
     {
@@ -146,49 +354,33 @@
         yukleniyor = true;
         try
         {
-          
             var data = await ApiService.GetDashboardAsync();
             if (data != null)
             {
                 dashboardData = data;
 
-                
                 Series.Clear();
+                // Gerçekleşen (Ana Veri)
                 Series.Add(new ChartSeries { Name = "Gerçekleşen", Data = dashboardData.GerceklesUretimSerisi.ToArray() });
+                // Beklenen (Referans Veri - Arkada silik görünsün diye 2. sırada)
                 Series.Add(new ChartSeries { Name = "Beklenen", Data = dashboardData.BeklenenUretimSerisi.ToArray() });
 
                 XAxisLabels = dashboardData.SaatEtiketleri.ToArray();
             }
 
-           
             var alertList = await ApiService.GetAlertsAsync();
             if (alertList != null)
             {
-                alerts = alertList.OrderByDescending(x => x.Timestamp).Take(20).ToList();
+                alerts = alertList.OrderByDescending(x => x.Timestamp).Take(15).ToList();
             }
         }
         catch (Exception ex)
         {
-            Snackbar.Add("Hata: " + ex.Message, Severity.Error);
+            Snackbar.Add("Bağlantı hatası: " + ex.Message, Severity.Error);
         }
         finally
         {
             yukleniyor = false;
         }
-    }
-
-    
-    private Color GetSeverityColor(int severity)
-    {
-        if (severity >= 3) return Color.Error;
-        if (severity == 2) return Color.Warning;
-        return Color.Success;
-    }
-
-    private string GetSeverityText(int severity)
-    {
-        if (severity >= 3) return "KRİTİK";
-        if (severity == 2) return "ORTA";
-        return "DÜŞÜK";
     }
 }

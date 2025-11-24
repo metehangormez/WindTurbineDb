@@ -14,100 +14,194 @@
 
 <MudContainer MaxWidth="MaxWidth.False" Class="pt-6 pb-8">
 
-    <MudText Typo="Typo.h4" Class="mb-6" Style="font-weight:800; color:#0d47a1;">
-        Genel İstatistikler
-    </MudText>
+    <div class="d-flex align-center gap-3 mb-8">
+        <div class="pa-3 rounded-circle" style="background: linear-gradient(135deg, #0d47a1 0%, #1976d2 100%); color:white; box-shadow: 0 4px 10px rgba(13, 71, 161, 0.3);">
+            <MudIcon Icon="@Icons.Material.Filled.DashboardCustomize" Size="Size.Large" />
+        </div>
+        <div>
+            <MudText Typo="Typo.h4" Style="font-weight:800; color:#1a237e; letter-spacing:-0.5px;">Genel Bakış</MudText>
+            <MudText Typo="Typo.body1" Class="mud-text-secondary">Saha performans metrikleri ve operasyonel özet.</MudText>
+        </div>
+    </div>
 
     @if (_loading)
     {
-            <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-4" />
-            <MudText Align="Align.Center">Veriler güncelleniyor...</MudText>
+            <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-4 rounded" Style="height:6px;" />
+            <MudText Align="Align.Center" Class="mud-text-secondary mt-2">Veriler hesaplanıyor...</MudText>
     }
     else
     {
             <MudGrid Class="mb-4">
 
                 <MudItem xs="12" md="3">
-                    <MudPaper Class="istat-card istat-red">
-                        <MudText Typo="Typo.subtitle1" Class="mb-2 istat-title">Riskli Uyarılar</MudText>
-                        <MudText Typo="Typo.h5" Class="mb-3 istat-value">@_riskliUyariSayisi</MudText>
-                        <MudButton Variant="Variant.Filled" OnClick="@(() => NavManager.NavigateTo("/alerts"))" Class="istat-button">
-                            Uyarıları Gör
-                        </MudButton>
-                    </MudPaper>
+                    <MudCard Elevation="4" Class="rounded-xl hover-effect h-100 position-relative overflow-hidden cursor-pointer" @onclick="@(() => NavManager.NavigateTo("/alerts"))">
+                        <div class="stats-card-bg red-bg"></div>
+                        <MudCardContent Class="d-flex flex-column justify-space-between h-100 pt-5 pb-3 px-5">
+                            <div class="d-flex justify-space-between align-start mb-2">
+                                <MudText Typo="Typo.subtitle1" Style="font-weight:600; color:#546e7a; z-index:1;">Riskli Uyarılar</MudText>
+                                <div class="pa-2 rounded-lg icon-box red-icon">
+                                    <MudIcon Icon="@Icons.Material.Filled.ReportGmailerrorred" Size="Size.Medium" />
+                                </div>
+                            </div>
+                            <div class="mt-4" style="z-index:1;">
+                                <div class="d-flex align-baseline">
+                                    <MudText Typo="Typo.h4" Style="font-weight:800; letter-spacing:-0.5px;">@_riskliUyariSayisi</MudText>
+                                </div>
+                                <MudText Typo="Typo.caption" Class="mt-1 d-block" Style="color:#c62828; font-weight:600;">Acil Müdahale</MudText>
+                            </div>
+                            <div class="d-flex justify-end mt-2"><MudIcon Icon="@Icons.Material.Filled.ArrowForward" Size="Size.Small" Color="Color.Default" Style="opacity:0.4;" /></div>
+                        </MudCardContent>
+                    </MudCard>
                 </MudItem>
 
                 <MudItem xs="12" md="3">
-                    <MudPaper Class="istat-card istat-green">
-                        <MudText Typo="Typo.subtitle1" Class="mb-2 istat-title">Aktif Öneriler</MudText>
-                        <MudText Typo="Typo.h5" Class="mb-3 istat-value">@_oneriSayisi</MudText>
-                        <MudButton Variant="Variant.Filled" OnClick="@(() => NavManager.NavigateTo("/analytics"))" Class="istat-button">
-                            Önerileri İncele
-                        </MudButton>
-                    </MudPaper>
+                    <MudCard Elevation="4" Class="rounded-xl hover-effect h-100 position-relative overflow-hidden cursor-pointer" @onclick="@(() => NavManager.NavigateTo("/analytics"))">
+                        <div class="stats-card-bg green-bg"></div>
+                        <MudCardContent Class="d-flex flex-column justify-space-between h-100 pt-5 pb-3 px-5">
+                            <div class="d-flex justify-space-between align-start mb-2">
+                                <MudText Typo="Typo.subtitle1" Style="font-weight:600; color:#546e7a; z-index:1;">AI Önerileri</MudText>
+                                <div class="pa-2 rounded-lg icon-box green-icon">
+                                    <MudIcon Icon="@Icons.Material.Filled.AutoAwesome" Size="Size.Medium" />
+                                </div>
+                            </div>
+                            <div class="mt-4" style="z-index:1;">
+                                <div class="d-flex align-baseline">
+                                    <MudText Typo="Typo.h4" Style="font-weight:800; letter-spacing:-0.5px;">@_oneriSayisi</MudText>
+                                </div>
+                                <MudText Typo="Typo.caption" Class="mt-1 d-block" Style="color:#2e7d32; font-weight:600;">Operasyonel Fırsat</MudText>
+                            </div>
+                            <div class="d-flex justify-end mt-2"><MudIcon Icon="@Icons.Material.Filled.ArrowForward" Size="Size.Small" Color="Color.Default" Style="opacity:0.4;" /></div>
+                        </MudCardContent>
+                    </MudCard>
                 </MudItem>
 
                 <MudItem xs="12" md="3">
-                    <MudPaper Class="istat-card istat-dark">
-                        <MudText Typo="Typo.subtitle1" Class="mb-2 istat-title">Emreamadelik</MudText>
-                        <MudText Typo="Typo.h5" Class="mb-3 istat-value">% @_emreamadelik.ToString("F1")</MudText>
-                        <MudButton Variant="Variant.Filled" OnClick="@(() => NavManager.NavigateTo("/statistics"))" Class="istat-button">
-                            Detayları İncele
-                        </MudButton>
-                    </MudPaper>
+                    <MudCard Elevation="4" Class="rounded-xl hover-effect h-100 position-relative overflow-hidden cursor-pointer" @onclick="@(() => NavManager.NavigateTo("/statistics"))">
+                        <div class="stats-card-bg blue-bg"></div>
+                        <MudCardContent Class="d-flex flex-column justify-space-between h-100 pt-5 pb-3 px-5">
+                            <div class="d-flex justify-space-between align-start mb-2">
+                                <MudText Typo="Typo.subtitle1" Style="font-weight:600; color:#546e7a; z-index:1;">Emreamadelik</MudText>
+                                <div class="pa-2 rounded-lg icon-box blue-icon">
+                                    <MudIcon Icon="@Icons.Material.Filled.OfflineBolt" Size="Size.Medium" />
+                                </div>
+                            </div>
+                            <div class="mt-4" style="z-index:1;">
+                                <div class="d-flex align-baseline">
+                                    <MudText Typo="Typo.h4" Style="font-weight:800; letter-spacing:-0.5px;">@($"%{_emreamadelik:F1}")</MudText>
+                                </div>
+                                <MudText Typo="Typo.caption" Class="mt-1 d-block" Style="color:#1565c0; font-weight:600;">Sistem Verimi</MudText>
+                            </div>
+                            <div class="d-flex justify-end mt-2"><MudIcon Icon="@Icons.Material.Filled.ArrowForward" Size="Size.Small" Color="Color.Default" Style="opacity:0.4;" /></div>
+                        </MudCardContent>
+                    </MudCard>
                 </MudItem>
 
                 <MudItem xs="12" md="3">
-                    <MudPaper Class="istat-card istat-dark">
-                        <MudText Typo="Typo.subtitle1" Class="mb-2 istat-title">Gün Beklentisi</MudText>
-                        <MudText Typo="Typo.h6" Class="mb-3 istat-value">@_gercekles.ToString("F0") / @_beklenen.ToString("F0") MW</MudText>
-                        <MudButton Variant="Variant.Filled" OnClick="@(() => NavManager.NavigateTo("/statistics"))" Class="istat-button">
-                            Detayları İncele
-                        </MudButton>
-                    </MudPaper>
-                </MudItem>
-            </MudGrid>
-
-            <MudGrid Class="mb-4">
-
-                <MudItem xs="12" md="3">
-                    <MudPaper Class="istat-card istat-dark">
-                        <MudText Typo="Typo.subtitle1" Class="mb-2 istat-title">Rüzgar Santralleri</MudText>
-                        <MudText Typo="Typo.h6" Class="mb-3 istat-value">@_aktifTurbin / @_toplamTurbin Aktif</MudText>
-                        <MudButton Variant="Variant.Filled" OnClick="@(() => NavManager.NavigateTo("/turbines"))" Class="istat-button">
-                            Santralleri Gör
-                        </MudButton>
-                    </MudPaper>
-                </MudItem>
-
-                <MudItem xs="12" md="3">
-                    <MudPaper Class="istat-card istat-dark">
-                        <MudText Typo="Typo.subtitle1" Class="mb-2 istat-title">Hesaplanan Kayıp</MudText>
-                        <MudText Typo="Typo.h6" Class="mb-3 istat-value">@_kayip.ToString("F1") MW</MudText>
-                        <MudButton Variant="Variant.Filled" OnClick="@(() => NavManager.NavigateTo("/statistics"))" Class="istat-button">
-                            Detayları İncele
-                        </MudButton>
-                    </MudPaper>
+                    <MudCard Elevation="4" Class="rounded-xl hover-effect h-100 position-relative overflow-hidden cursor-pointer" @onclick="@(() => NavManager.NavigateTo("/statistics"))">
+                        <div class="stats-card-bg indigo-bg"></div>
+                        <MudCardContent Class="d-flex flex-column justify-space-between h-100 pt-5 pb-3 px-5">
+                            <div class="d-flex justify-space-between align-start mb-2">
+                                <MudText Typo="Typo.subtitle1" Style="font-weight:600; color:#546e7a; z-index:1;">Gün Beklentisi</MudText>
+                                <div class="pa-2 rounded-lg icon-box indigo-icon">
+                                    <MudIcon Icon="@Icons.Material.Filled.ShowChart" Size="Size.Medium" />
+                                </div>
+                            </div>
+                            <div class="mt-4" style="z-index:1;">
+                                <div class="d-flex align-baseline">
+                                    <MudText Typo="Typo.h4" Style="font-weight:800; letter-spacing:-0.5px;">@($"{_gercekles:F0} / {_beklenen:F0}")</MudText>
+                                    <MudText Typo="Typo.subtitle2" Class="ml-1 mud-text-secondary" Style="font-weight:600;">MW</MudText>
+                                </div>
+                                <MudText Typo="Typo.caption" Class="mt-1 d-block" Style="color:#283593; font-weight:600;">Gerçekleşen / Hedef</MudText>
+                            </div>
+                            <div class="d-flex justify-end mt-2"><MudIcon Icon="@Icons.Material.Filled.ArrowForward" Size="Size.Small" Color="Color.Default" Style="opacity:0.4;" /></div>
+                        </MudCardContent>
+                    </MudCard>
                 </MudItem>
 
                 <MudItem xs="12" md="3">
-                    <MudPaper Class="istat-card istat-dark">
-                        <MudText Typo="Typo.subtitle1" Class="mb-2 istat-title">Hava Durumu</MudText>
-                        <MudText Typo="Typo.h6" Class="mb-3 istat-value">@_havaDurumuOzet</MudText>
-                        <MudButton Variant="Variant.Filled" OnClick="@(() => NavManager.NavigateTo("/weather"))" Class="istat-button">
-                            Meteorolojiyi Aç
-                        </MudButton>
-                    </MudPaper>
+                    <MudCard Elevation="4" Class="rounded-xl hover-effect h-100 position-relative overflow-hidden cursor-pointer" @onclick="@(() => NavManager.NavigateTo("/turbines"))">
+                        <div class="stats-card-bg cyan-bg"></div>
+                        <MudCardContent Class="d-flex flex-column justify-space-between h-100 pt-5 pb-3 px-5">
+                            <div class="d-flex justify-space-between align-start mb-2">
+                                <MudText Typo="Typo.subtitle1" Style="font-weight:600; color:#546e7a; z-index:1;">Türbin Durumu</MudText>
+                                <div class="pa-2 rounded-lg icon-box cyan-icon">
+                                    <MudIcon Icon="@Icons.Material.Filled.WindPower" Size="Size.Medium" />
+                                </div>
+                            </div>
+                            <div class="mt-4" style="z-index:1;">
+                                <div class="d-flex align-baseline">
+                                    <MudText Typo="Typo.h4" Style="font-weight:800; letter-spacing:-0.5px;">@($"{_aktifTurbin} / {_toplamTurbin}")</MudText>
+                                </div>
+                                <MudText Typo="Typo.caption" Class="mt-1 d-block" Style="color:#00838f; font-weight:600;">Aktif Ünite</MudText>
+                            </div>
+                            <div class="d-flex justify-end mt-2"><MudIcon Icon="@Icons.Material.Filled.ArrowForward" Size="Size.Small" Color="Color.Default" Style="opacity:0.4;" /></div>
+                        </MudCardContent>
+                    </MudCard>
                 </MudItem>
 
                 <MudItem xs="12" md="3">
-                    <MudPaper Class="istat-card istat-dark">
-                        <MudText Typo="Typo.subtitle1" Class="mb-2 istat-title">Son Rapor</MudText>
-                        <MudText Typo="Typo.h6" Class="mb-3 istat-value">@_sonRaporDurumu</MudText>
-                        <MudButton Variant="Variant.Filled" OnClick="@(() => NavManager.NavigateTo("/reports"))" Class="istat-button">
-                            Raporlara Git
-                        </MudButton>
-                    </MudPaper>
+                    <MudCard Elevation="4" Class="rounded-xl hover-effect h-100 position-relative overflow-hidden cursor-pointer" @onclick="@(() => NavManager.NavigateTo("/statistics"))">
+                        <div class="stats-card-bg purple-bg"></div>
+                        <MudCardContent Class="d-flex flex-column justify-space-between h-100 pt-5 pb-3 px-5">
+                            <div class="d-flex justify-space-between align-start mb-2">
+                                <MudText Typo="Typo.subtitle1" Style="font-weight:600; color:#546e7a; z-index:1;">Önlenen Kayıp</MudText>
+                                <div class="pa-2 rounded-lg icon-box purple-icon">
+                                    <MudIcon Icon="@Icons.Material.Filled.Shield" Size="Size.Medium" />
+                                </div>
+                            </div>
+                            <div class="mt-4" style="z-index:1;">
+                                <div class="d-flex align-baseline">
+                                    <MudText Typo="Typo.h4" Style="font-weight:800; letter-spacing:-0.5px;">@_kayip.ToString("F1")</MudText>
+                                    <MudText Typo="Typo.subtitle2" Class="ml-1 mud-text-secondary" Style="font-weight:600;">MW</MudText>
+                                </div>
+                                <MudText Typo="Typo.caption" Class="mt-1 d-block" Style="color:#6a1b9a; font-weight:600;">AI Optimizasyonu</MudText>
+                            </div>
+                            <div class="d-flex justify-end mt-2"><MudIcon Icon="@Icons.Material.Filled.ArrowForward" Size="Size.Small" Color="Color.Default" Style="opacity:0.4;" /></div>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+
+                <MudItem xs="12" md="3">
+                    <MudCard Elevation="4" Class="rounded-xl hover-effect h-100 position-relative overflow-hidden cursor-pointer" @onclick="@(() => NavManager.NavigateTo("/weather"))">
+                        <div class="stats-card-bg orange-bg"></div>
+                        <MudCardContent Class="d-flex flex-column justify-space-between h-100 pt-5 pb-3 px-5">
+                            <div class="d-flex justify-space-between align-start mb-2">
+                                <MudText Typo="Typo.subtitle1" Style="font-weight:600; color:#546e7a; z-index:1;">Hava Durumu</MudText>
+                                <div class="pa-2 rounded-lg icon-box orange-icon">
+                                    <MudIcon Icon="@Icons.Material.Filled.Thermostat" Size="Size.Medium" />
+                                </div>
+                            </div>
+                            <div class="mt-4" style="z-index:1;">
+                                <div class="d-flex align-baseline">
+                                    <MudText Typo="Typo.h4" Style="font-weight:800; letter-spacing:-0.5px;">@_havaDurumuDerece</MudText>
+                                    <MudText Typo="Typo.subtitle2" Class="ml-1 mud-text-secondary" Style="font-weight:600;">@_havaDurumuDurum</MudText>
+                                </div>
+                                <MudText Typo="Typo.caption" Class="mt-1 d-block" Style="color:#ef6c00; font-weight:600;">Saha Tahmini</MudText>
+                            </div>
+                            <div class="d-flex justify-end mt-2"><MudIcon Icon="@Icons.Material.Filled.ArrowForward" Size="Size.Small" Color="Color.Default" Style="opacity:0.4;" /></div>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+
+                <MudItem xs="12" md="3">
+                    <MudCard Elevation="4" Class="rounded-xl hover-effect h-100 position-relative overflow-hidden cursor-pointer" @onclick="@(() => NavManager.NavigateTo("/reports"))">
+                        <div class="stats-card-bg gray-bg"></div>
+                        <MudCardContent Class="d-flex flex-column justify-space-between h-100 pt-5 pb-3 px-5">
+                            <div class="d-flex justify-space-between align-start mb-2">
+                                <MudText Typo="Typo.subtitle1" Style="font-weight:600; color:#546e7a; z-index:1;">Günlük Rapor</MudText>
+                                <div class="pa-2 rounded-lg icon-box gray-icon">
+                                    <MudIcon Icon="@Icons.Material.Filled.Description" Size="Size.Medium" />
+                                </div>
+                            </div>
+                            <div class="mt-4" style="z-index:1;">
+                                <div class="d-flex align-baseline">
+                                    <MudText Typo="Typo.h4" Style="font-weight:800; letter-spacing:-0.5px;">@_sonRaporDurumu</MudText>
+                                </div>
+                                <MudText Typo="Typo.caption" Class="mt-1 d-block" Style="color:#455a64; font-weight:600;">Otomatik Oluşturma</MudText>
+                            </div>
+                            <div class="d-flex justify-end mt-2"><MudIcon Icon="@Icons.Material.Filled.ArrowForward" Size="Size.Small" Color="Color.Default" Style="opacity:0.4;" /></div>
+                        </MudCardContent>
+                    </MudCard>
                 </MudItem>
 
             </MudGrid>
@@ -115,35 +209,44 @@
 </MudContainer>
 
 <style>
-    .istat-card {
-        border-radius: 20px;
-        padding: 18px 22px;
-        color: #ffffff;
-        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.15);
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
+    .hover-effect { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid rgba(0,0,0,0.04); }
+    .hover-effect:hover { transform: translateY(-6px); box-shadow: 0 12px 24px rgba(0,0,0,0.1) !important; border-color:transparent; }
+
+    .cursor-pointer { cursor: pointer; }
+
+    /* Arka Plan Dekorları */
+    .stats-card-bg {
+        position: absolute;
+        top: -50px;
+        right: -50px;
+        width: 140px;
+        height: 140px;
+        border-radius: 50%;
+        opacity: 0.15;
+        z-index: 0;
+        pointer-events: none;
     }
 
-    .istat-red { background: linear-gradient(135deg, #e53935 0%, #b71c1c 100%); }
-    .istat-green { background: linear-gradient(135deg, #43a047 0%, #1b5e20 100%); }
-    .istat-dark { background: linear-gradient(135deg, #1a237e 0%, #0d47a1 100%); }
+    /* Renk Temaları (Gradient Arkaplanlar) */
+    .red-bg { background: radial-gradient(circle, #f44336 0%, transparent 70%); }
+    .green-bg { background: radial-gradient(circle, #4caf50 0%, transparent 70%); }
+    .blue-bg { background: radial-gradient(circle, #2196f3 0%, transparent 70%); }
+    .indigo-bg { background: radial-gradient(circle, #3f51b5 0%, transparent 70%); }
+    .cyan-bg { background: radial-gradient(circle, #00bcd4 0%, transparent 70%); }
+    .purple-bg { background: radial-gradient(circle, #9c27b0 0%, transparent 70%); }
+    .orange-bg { background: radial-gradient(circle, #ff9800 0%, transparent 70%); }
+    .gray-bg { background: radial-gradient(circle, #607d8b 0%, transparent 70%); }
 
-    .istat-button {
-        border-radius: 999px;
-        padding: 6px 20px;
-        font-size: 0.75rem;
-        font-weight: 700;
-        background-color: rgba(255,255,255,0.9);
-        color: #333;
-        align-self: flex-start;
-        text-transform: none;
-        margin-top: 10px;
-    }
-
-    .istat-title { font-weight: 600; opacity: 0.9; font-size: 0.9rem; }
-    .istat-value { font-weight: 800; font-size: 1.5rem; }
+    /* İkon Kutuları */
+    .icon-box { display:flex; align-items:center; justify-content:center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+    .red-icon { background-color: #ffebee; color: #c62828; }
+    .green-icon { background-color: #e8f5e9; color: #2e7d32; }
+    .blue-icon { background-color: #e3f2fd; color: #1565c0; }
+    .indigo-icon { background-color: #e8eaf6; color: #283593; }
+    .cyan-icon { background-color: #e0f7fa; color: #00838f; }
+    .purple-icon { background-color: #f3e5f5; color: #6a1b9a; }
+    .orange-icon { background-color: #fff3e0; color: #ef6c00; }
+    .gray-icon { background-color: #eceff1; color: #455a64; }
 </style>
 
 @code {
@@ -158,7 +261,8 @@
     private double _kayip = 0;
     private int _toplamTurbin = 0;
     private int _aktifTurbin = 0;
-    private string _havaDurumuOzet = "Bilinmiyor";
+    private string _havaDurumuDerece = "--";
+    private string _havaDurumuDurum = "";
     private string _sonRaporDurumu = "Hazır";
 
     protected override async Task OnInitializedAsync()
@@ -166,28 +270,20 @@
         _loading = true;
         try
         {
-            // --- 1. Dashboard Verileri ---
+            // 1. Dashboard Verileri
             var dashboardData = await ApiService.GetDashboardAsync();
             if (dashboardData != null)
             {
-                // DTO'daki hazır özellikler kullanıldı
                 _riskliUyariSayisi = dashboardData.RiskliUyariSayisi;
                 _oneriSayisi = dashboardData.ToplamOneriSayisi;
-
-                // Emreamadelik için VerimlilikYuzdesi kullanıldı
                 _emreamadelik = dashboardData.VerimlilikYuzdesi;
-
-                // Türbin sayıları DTO'dan
                 _toplamTurbin = dashboardData.ToplamTurbinSayisi;
                 _aktifTurbin = dashboardData.AktifTurbinSayisi;
-
                 _gercekles = dashboardData.ToplamUretimMW;
 
-                // Liste null kontrolü yaparak toplamı al
                 if (dashboardData.BeklenenUretimSerisi != null)
                     _beklenen = dashboardData.BeklenenUretimSerisi.Sum();
 
-                // Kayıp Hesabı: (Beklenen - Gerçekleşen)
                 if (dashboardData.BeklenenUretimSerisi != null && dashboardData.GerceklesUretimSerisi != null)
                 {
                     var count = Math.Min(dashboardData.BeklenenUretimSerisi.Count, dashboardData.GerceklesUretimSerisi.Count);
@@ -199,30 +295,27 @@
                 }
             }
 
-            // --- 2. Hava Durumu ---
+            // 2. Hava Durumu
             var weather = await ApiService.GetWeatherForecastAsync();
             if (weather != null && weather.Any())
             {
                 var today = weather.FirstOrDefault();
                 if (today != null)
                 {
-                    _havaDurumuOzet = $"{today.Temperature}°C {today.Condition}";
+                    _havaDurumuDerece = $"{today.Temperature}°C";
+                    _havaDurumuDurum = today.Condition;
                 }
             }
 
-            // --- 3. Rapor Durumu ---
+            // 3. Rapor Durumu
             var reports = await ApiService.GetReportsAsync();
             if (reports != null && reports.Any())
             {
                 var lastReport = reports.OrderByDescending(r => r.GeneratedDate).FirstOrDefault();
                 if (lastReport != null && lastReport.GeneratedDate.Date == DateTime.Today)
-                {
                     _sonRaporDurumu = "Güncel";
-                }
                 else
-                {
                     _sonRaporDurumu = "Bekleniyor";
-                }
             }
         }
         catch (Exception ex)
