@@ -16,37 +16,28 @@
 
     <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="0" Variant="@DrawerVariant.Responsive" Width="260px" Style="background-color: #0d47a1; color: white;">
         <div class="d-flex flex-column mud-height-full">
+
             <div class="d-flex justify-center align-center py-6 px-3">
-                <MudImage Src="images/logo.png"
-                          Width="160"
-                          Alt="Logo"
-                          Fluid="true"
-                          Style="filter: brightness(0) invert(1);" />
+                <MudImage Src="images/logo.png" Width="160" Alt="Logo" Fluid="true" Style="filter: brightness(0) invert(1);" />
             </div>
-            <MudNavMenu Class="pt-8 flex-grow-1">
+
+            <MudNavMenu Class="flex-grow-1">
                 <MudText Typo="Typo.overline" Class="px-4 mb-2 d-block" Style="color: #90caf9; font-weight: bold;">GENEL BAKIŞ</MudText>
 
-                <MudNavLink Href="/dashboard" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard" IconColor="Color.Inherit" Class="nav-item-custom">
+                <MudNavLink Href="/dashboard" Icon="@Icons.Material.Filled.Dashboard" IconColor="Color.Inherit" Class="nav-item-custom">
                     Ana Sayfa
+                </MudNavLink>
+
+                <MudNavLink Href="/ai-analysis" Icon="@Icons.Material.Filled.AutoAwesome" IconColor="Color.Warning" Class="nav-item-custom" Style="font-weight:700; color:#ffcc80 !important;">
+                    AI Asistanı
                 </MudNavLink>
 
                 <MudNavLink Href="/turbines" Icon="@Icons.Material.Filled.WindPower" IconColor="Color.Inherit" Class="nav-item-custom">
                     Türbinler
                 </MudNavLink>
 
-                <MudNavLink Href="/stats-overview"
-                            Icon="@Icons.Material.Filled.DashboardCustomize"
-                            IconColor="Color.Inherit"
-                            Class="nav-item-custom">
-                    İstatistik Özeti
-                </MudNavLink>
-
-                <MudNavLink Href="/statistics" Icon="@Icons.Material.Filled.BarChart" IconColor="Color.Inherit" Class="nav-item-custom">
-                    Emreamadelik
-                </MudNavLink>
-
-                <MudNavLink Href="/analytics" Icon="@Icons.Material.Filled.Analytics" IconColor="Color.Inherit" Class="nav-item-custom">
-                    Analizler
+                <MudNavLink Href="/stats-overview" Icon="@Icons.Material.Filled.PieChart" IconColor="Color.Inherit" Class="nav-item-custom">
+                    İstatistikler
                 </MudNavLink>
 
                 <MudNavLink Href="/map" Icon="@Icons.Material.Filled.Map" IconColor="Color.Inherit" Class="nav-item-custom">
@@ -80,12 +71,8 @@
     <MudMainContent Style="background-color: #f5f7fa; min-height: 100vh;">
         <MudContainer MaxWidth="MaxWidth.Large" Class="pt-8 px-6">
             <ErrorBoundary>
-                <ChildContent>
-                    @Body
-                </ChildContent>
-                <ErrorContent>
-                    <MudAlert Severity="Severity.Error">Sayfa yüklenirken bir hata oluştu!</MudAlert>
-                </ErrorContent>
+                <ChildContent> @Body </ChildContent>
+                <ErrorContent> <MudAlert Severity="Severity.Error">Bir hata oluştu!</MudAlert> </ErrorContent>
             </ErrorBoundary>
         </MudContainer>
     </MudMainContent>

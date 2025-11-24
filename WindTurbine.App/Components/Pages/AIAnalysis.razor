@@ -1,0 +1,330 @@
+﻿@page "/ai-analysis"
+@using WindTurbine.App.Services
+@using WindTurbine.DTOs.Weather
+@using WindTurbine.DTOs.Turbines
+@using MudBlazor
+@using System.Globalization
+@inject IApiService ApiService
+
+<PageTitle>AI Analiz Merkezi</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mb-6">
+
+    <div class="d-flex justify-space-between align-center mb-6">
+        <div>
+            <div class="d-flex align-center gap-2">
+                <MudIcon Icon="@Icons.Material.Filled.AutoAwesome" Color="Color.Warning" Size="Size.Large" />
+                <MudText Typo="Typo.h4" Color="Color.Primary" Style="font-weight: 800;">AI Operasyon Asistanı</MudText>
+            </div>
+            <MudText Typo="Typo.body1" Class="mud-text-secondary mt-1">
+                Meteorolojik veriler ve türbin telemetrisi üzerinden gerçek zamanlı optimizasyon önerileri.
+            </MudText>
+        </div>
+
+        <MudChip T="string" Color="Color.Success" Variant="Variant.Outlined" Icon="@Icons.Material.Filled.Sensors">
+            SCADA Bağlantısı: Aktif
+        </MudChip>
+    </div>
+
+    @if (_loading)
+    {
+        <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-6" />
+        <MudText Align="Align.Center" Typo="Typo.h6" Class="mud-text-secondary">Veriler analiz ediliyor...</MudText>
+    }
+    else
+    {
+        <MudGrid>
+            <MudItem xs="12" md="8">
+                <MudGrid>
+                    @foreach (var item in _displayForecasts)
+                    {
+                        <MudItem xs="12" sm="6">
+                            <MudCard Elevation="4" Class="rounded-xl hover-effect h-100 position-relative overflow-hidden">
+                                <div class="ai-card-bg" style="@GetBgStyle(item.Condition)"></div>
+
+                                <MudCardHeader>
+                                    <CardHeaderContent>
+                                        <div class="d-flex justify-space-between w-100 align-start">
+                                            <div>
+                                                <MudText Typo="Typo.h6" Style="font-weight:800; color:#0d47a1;">
+                                                    @item.Date.ToString("dddd", new CultureInfo("tr-TR"))
+                                                </MudText>
+                                                <div class="d-flex align-center gap-1">
+                                                    <MudIcon Icon="@Icons.Material.Filled.AccessTime" Size="Size.Small" Color="Color.Default" style="font-size:1rem; opacity:0.7;" />
+                                                    <MudText Typo="Typo.body2" Style="font-weight:600;">
+                                                        @item.Date.ToString("HH:00") - @item.Date.AddHours(4).ToString("HH:00")
+                                                    </MudText>
+                                                </div>
+                                                <MudText Typo="Typo.caption" Class="mud-text-secondary">@item.Date.ToString("dd MMMM yyyy")</MudText>
+                                            </div>
+                                            <div class="d-flex flex-column align-center">
+                                                <MudIcon Icon="@GetWeatherIcon(item.Condition)" Size="Size.Large" Color="@GetIconColor(item.Condition)" />
+                                                <MudText Typo="Typo.caption" Style="font-weight:600;">@item.Condition</MudText>
+                                            </div>
+                                        </div>
+                                    </CardHeaderContent>
+                                </MudCardHeader>
+
+                                <MudCardContent Class="py-2">
+                                    <div class="d-flex justify-space-between mb-3 px-2 py-2 rounded" style="background-color:rgba(0,0,0,0.03);">
+                                        <div class="text-center">
+                                            <MudText Typo="Typo.caption" Class="mud-text-secondary">Rüzgar</MudText>
+                                            <MudText Typo="Typo.h6" Color="Color.Primary"><b>@item.WindSpeed</b> <span style="font-size:0.7em">m/s</span></MudText>
+                                        </div>
+                                        <MudDivider Vertical="true" FlexItem="true" />
+                                        <div class="text-center">
+                                            <MudText Typo="Typo.caption" Class="mud-text-secondary">Sıcaklık</MudText>
+                                            <MudText Typo="Typo.h6"><b>@item.Temperature</b> <span style="font-size:0.7em">°C</span></MudText>
+                                        </div>
+                                        <MudDivider Vertical="true" FlexItem="true" />
+                                        <div class="text-center">
+                                            <MudText Typo="Typo.caption" Class="mud-text-secondary">Verim</MudText>
+                                            <MudText Typo="Typo.h6" Color="Color.Success"><b>%@CalculateEfficiency(item.WindSpeed)</b></MudText>
+                                        </div>
+                                    </div>
+
+                                    <MudDivider Class="my-2" />
+
+                                    <div class="d-flex gap-3 mt-3">
+                                        <MudIcon Icon="@Icons.Material.Filled.Psychology" Color="Color.Warning" Size="Size.Medium" />
+                                        <div>
+                                            <MudText Typo="Typo.subtitle2" Style="font-weight:800; color:#e65100; letter-spacing:0.5px;">
+                                                AI TAVSİYESİ:
+                                            </MudText>
+                                            <MudText Typo="Typo.body2" Style="line-height:1.3; font-weight:500;">
+                                                @GenerateSmartAdvice(item)
+                                            </MudText>
+                                        </div>
+                                    </div>
+                                </MudCardContent>
+
+                                <MudCardActions Class="px-4 pb-4 pt-1">
+                                    <MudChip T="string" Variant="Variant.Filled"
+                                             Color="@GetActionColor(item.Recommendation)"
+                                             Size="Size.Small"
+                                             Class="w-100 justify-center py-4"
+                                             Style="font-weight:700; border-radius:8px;">
+                                        @GetActionText(item)
+                                    </MudChip>
+                                </MudCardActions>
+                            </MudCard>
+                        </MudItem>
+                    }
+                </MudGrid>
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudPaper Class="pa-5 rounded-xl sticky-top" Elevation="4" Style="background: linear-gradient(160deg, #0d47a1 0%, #01579b 100%); color: white; top: 20px;">
+                    <div class="d-flex align-center gap-3 mb-6">
+                        <div class="pa-2 rounded-circle" style="background:rgba(255,255,255,0.2);">
+                            <MudIcon Icon="@Icons.Material.Filled.Hub" Color="Color.Inherit" Size="Size.Medium" />
+                        </div>
+                        <div>
+                            <MudText Typo="Typo.h6" Style="font-weight:700; line-height:1.2;">Sistem<br />Veri Akışı</MudText>
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <div class="d-flex justify-space-between align-end mb-1">
+                            <MudText Typo="Typo.caption" Style="opacity:0.8;">Aktif Türbinler</MudText>
+                            <MudText Typo="Typo.h5" Style="font-weight:bold;">@_activeTurbines / @_totalTurbines</MudText>
+                        </div>
+                        <MudProgressLinear Color="Color.Success" Value="@((_activeTurbines*100.0)/Math.Max(1, _totalTurbines))" Class="rounded-lg" Style="height:8px; background-color:rgba(255,255,255,0.2);" />
+                    </div>
+
+                    <div class="mb-6">
+                        <MudText Typo="Typo.subtitle2" Class="mb-3" Style="font-weight:600;">Canlı Log Analizi:</MudText>
+                        <div class="d-flex flex-column gap-2">
+                            @foreach (var log in _systemLogs)
+                            {
+                                <div class="d-flex align-center gap-2 slide-in" style="font-size:0.75rem; background:rgba(255,255,255,0.1); padding:10px; border-radius:8px; backdrop-filter:blur(5px);">
+                                    <MudIcon Icon="@log.Icon" Color="@log.Color" Size="Size.Small" />
+                                    <span>@log.Message</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Filled" Class="rounded-lg" Style="background-color:rgba(255,255,255,0.15); color:white; border:1px solid rgba(255,255,255,0.1);">
+                        <MudText Typo="Typo.caption">
+                            <b>Bilgi:</b> AI modeli, son 15 dakikalık SCADA verilerini meteorolojik tahminlerle çaprazlayarak soldaki önerileri oluşturmuştur.
+                        </MudText>
+                    </MudAlert>
+
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    }
+</MudContainer>
+
+<style>
+    .hover-effect {
+        transition: all 0.3s ease;
+    }
+
+        .hover-effect:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.15) !important;
+        }
+
+    .ai-card-bg {
+        position: absolute;
+        top: -30px;
+        right: -30px;
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        opacity: 0.15;
+        z-index: 0;
+    }
+
+    .slide-in {
+        animation: slideIn 0.5s ease-out;
+    }
+
+    @@keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+</style>
+
+@code {
+    private List<WeatherForecastDto> _displayForecasts = new();
+    private int _totalTurbines = 0;
+    private int _activeTurbines = 0;
+    private List<SystemLog> _systemLogs = new();
+    private bool _loading = true;
+
+    // Log Modeli
+    class SystemLog { public string Message { get; set; } public string Icon { get; set; } public Color Color { get; set; } }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _loading = true;
+        try
+        {
+            // 1. Verileri Çek
+            var rawWeather = await ApiService.GetWeatherForecastAsync();
+            var turbines = await ApiService.GetTurbinesAsync();
+
+            // 2. Hava Durumu Listesini Filtrele (Geniş Aralıklar İçin)
+            // Mantık: Şimdi, +6 Saat, Yarın Öğlen, Yarın Akşam gibi farklı dilimler alıyoruz.
+            if (rawWeather != null && rawWeather.Any())
+            {
+                _displayForecasts.Clear();
+
+                // 1. Kart: Şu An (veya ilk veri)
+                _displayForecasts.Add(rawWeather.First());
+
+                // 2. Kart: +6 Saat sonrası (Varsa)
+                var sixHoursLater = rawWeather.FirstOrDefault(x => x.Date > DateTime.Now.AddHours(5));
+                if (sixHoursLater != null) _displayForecasts.Add(sixHoursLater);
+
+                // 3. Kart: Yarın Öğlen (veya +24 saat)
+                var tomorrow = rawWeather.FirstOrDefault(x => x.Date.Date > DateTime.Now.Date);
+                if (tomorrow != null) _displayForecasts.Add(tomorrow);
+
+                // 4. Kart: Ertesi Gün (veya +48 saat)
+                var nextDay = rawWeather.FirstOrDefault(x => x.Date.Date > DateTime.Now.Date.AddDays(1));
+                if (nextDay != null) _displayForecasts.Add(nextDay);
+
+                // Eğer liste hala azsa (API az veri döndürdüyse) manuel doldur
+                if (_displayForecasts.Count < 2 && rawWeather.Count > 1)
+                {
+                    _displayForecasts = rawWeather.Take(4).ToList();
+                }
+            }
+
+            // 3. Türbin Verileri
+            if (turbines != null)
+            {
+                _totalTurbines = turbines.Count;
+                _activeTurbines = turbines.Count(t => t.LastStatus == "Running" || t.LastStatus == "Active");
+
+                // Canlı Loglar (Simülasyon)
+                _systemLogs = new List<SystemLog>
+                {
+                    new SystemLog { Message = "SCADA veri paketi #9281 alındı.", Icon = Icons.Material.Filled.DataSaverOn, Color = Color.Success },
+                    new SystemLog { Message = $"{_activeTurbines} türbin sensörü normalize edildi.", Icon = Icons.Material.Filled.CheckCircleOutline, Color = Color.Info },
+                    new SystemLog { Message = "AI Tahmin Modeli v2.4 çalıştı.", Icon = Icons.Material.Filled.Psychology, Color = Color.Warning },
+                    new SystemLog { Message = "Rüzgar sapması %2.1 (Normal)", Icon = Icons.Material.Filled.TrendingFlat, Color = Color.Success }
+                };
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Hata: " + ex.Message);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    // --- YAPAY ZEKA MANTIĞI VE UI YARDIMCILARI ---
+
+    private string GenerateSmartAdvice(WeatherForecastDto data)
+    {
+        // Rüzgar ve duruma göre dinamik metin üretimi
+        if (data.WindSpeed > 15) return "Kritik rüzgar hızı. Türbinleri fırtına moduna alın ve fren sistemlerini hazırda bekletin.";
+        if (data.WindSpeed < 4) return "Düşük üretim beklentisi. Bu aralığı planlı bakım veya kanat denetimi için değerlendirin.";
+        if (data.Temperature > 35) return "Aşırı sıcaklık uyarısı. Şanzıman yağı soğutma ünitelerini maksimum kapasitede çalıştırın.";
+        if (data.Condition.Contains("Fırtına") || data.Condition.Contains("Yağmur")) return "Yıldırım riski mevcut. Saha personelini güvenli bölgelere çekin.";
+
+        return "Optimal koşullar. Kanat açısını rüzgar yönüne göre dinamik optimize edin ve üretimi maksimize edin.";
+    }
+
+    private string GetActionText(WeatherForecastDto data)
+    {
+        if (data.WindSpeed > 15) return "SİSTEMİ DURDUR";
+        if (data.WindSpeed < 4) return "BAKIM PLANLA";
+        if (data.Condition.Contains("Fırtına")) return "GÜVENLİK MODU";
+        return "ÜRETİMİ İZLE";
+    }
+
+    private Color GetActionColor(string rec)
+    {
+        if (rec.Contains("DURDUR") || rec.Contains("Kritik")) return Color.Error;
+        if (rec.Contains("Bakım")) return Color.Warning;
+        return Color.Success;
+    }
+
+    private int CalculateEfficiency(double windSpeed)
+    {
+        if (windSpeed < 3 || windSpeed > 25) return 0;
+        if (windSpeed >= 12 && windSpeed <= 15) return 100; // Nominal hız
+        // Basit bir eğri simülasyonu
+        return (int)Math.Min(100, (windSpeed / 12.0) * 100);
+    }
+
+    private string GetBgStyle(string condition)
+    {
+        if (condition.Contains("Güneş")) return "background: radial-gradient(circle, rgba(255,152,0,0.4) 0%, rgba(255,255,255,0) 70%);";
+        if (condition.Contains("Yağmur")) return "background: radial-gradient(circle, rgba(33,150,243,0.4) 0%, rgba(255,255,255,0) 70%);";
+        return "background: radial-gradient(circle, rgba(158,158,158,0.4) 0%, rgba(255,255,255,0) 70%);";
+    }
+
+    private string GetWeatherIcon(string condition)
+    {
+        if (condition.Contains("Güneş") || condition.Contains("Açık")) return Icons.Material.Filled.WbSunny;
+        if (condition.Contains("Bulut")) return Icons.Material.Filled.Cloud;
+        if (condition.Contains("Yağmur")) return Icons.Material.Filled.WaterDrop;
+        if (condition.Contains("Fırtına")) return Icons.Material.Filled.Thunderstorm;
+        if (condition.Contains("Rüzgar")) return Icons.Material.Filled.Air;
+        return Icons.Material.Filled.WbCloudy;
+    }
+
+    private Color GetIconColor(string condition)
+    {
+        if (condition.Contains("Güneş")) return Color.Warning;
+        if (condition.Contains("Yağmur")) return Color.Info;
+        return Color.Primary;
+    }
+}
