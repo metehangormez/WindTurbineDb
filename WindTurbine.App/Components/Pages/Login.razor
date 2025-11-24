@@ -79,7 +79,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        // Uygulama açılınca hafızayı kontrol et (Beni Hatırla)
+       
         if (Preferences.ContainsKey("SavedEmail"))
         {
             loginDto.Email = Preferences.Get("SavedEmail", "");
@@ -92,18 +92,17 @@
         form.Validate();
         if (success)
         {
-            // API'ye giriş isteği gönder
+        
             var sonuc = await ApiService.LoginAsync(loginDto);
 
             if (sonuc)
             {
-                // 1. Oturum Bilgilerini Doldur 
-                // (Gerçek projede API'den dönen User nesnesini buraya yazarız)
+               
                 UserSession.Email = loginDto.Email;
                 UserSession.FullName = "Metehan Görmez";
                 UserSession.Role = "Admin";
 
-                // 2. Beni Hatırla Mantığı (Telefona/PC'ye kaydet)
+              
                 if (beniHatirla)
                 {
                     Preferences.Set("SavedEmail", loginDto.Email);

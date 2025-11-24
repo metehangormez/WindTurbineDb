@@ -32,7 +32,7 @@ namespace WindTurbineDb.Controllers
             if (user == null)
                 return Unauthorized("E-posta veya şifre hatalı.");
 
-            // Başarılı girişte basit bir mesaj veya kullanıcı bilgisi dönüyoruz
+            
             return Ok(new { Message = "Giriş Başarılı", UserId = user.UserId, FullName = user.FullName });
         }
     }

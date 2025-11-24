@@ -67,7 +67,7 @@
     {
         if (firstRender)
         {
-            // Sayfa yüklensin, scriptler gelsin diye biraz bekleyelim
+          
             await Task.Delay(500);
             await HaritayiYenile();
         }
@@ -83,7 +83,7 @@
             {
                 turbines = data;
 
-                // JS tarafındaki initMap fonksiyonunu çağır
+              
                 await JS.InvokeVoidAsync("initMap", turbines);
 
                 StateHasChanged();

@@ -16,8 +16,7 @@
 @code {
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
 
-    // Bu parametreyi dışarıdan alacağız.
-    // Eğer boş gelirse "Ekleme", dolu gelirse "Düzenleme" modundayız demektir.
+    
     [Parameter] public TurbineDto Model { get; set; } = new TurbineDto();
 
     void Submit() => MudDialog.Close(DialogResult.Ok(Model));

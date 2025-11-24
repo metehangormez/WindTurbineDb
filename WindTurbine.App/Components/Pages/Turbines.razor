@@ -98,7 +98,7 @@
         finally { yukleniyor = false; }
     }
 
-    // --- YENİ EKLEME FONKSİYONU ---
+
     private async Task OpenAddDialog()
     {
         var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true };
@@ -108,7 +108,7 @@
         if (!result.Canceled)
         {
             var yeniData = (TurbineDto)result.Data;
-            // DTO dönüşümü (CreateDto'ya çevirip göndermek lazım)
+           
             var createDto = new TurbineCreateDto
                 {
                     Name = yeniData.Name,
@@ -122,10 +122,10 @@
         }
     }
 
-    // --- DÜZENLEME FONKSİYONU ---
+    
     private async Task OpenEditDialog(TurbineDto item)
     {
-        var parameters = new DialogParameters { ["Model"] = item }; // Mevcut veriyi gönder
+        var parameters = new DialogParameters { ["Model"] = item }; 
         var dialog = DialogService.Show<TurbineDialog>("Türbin Düzenle", parameters);
         var result = await dialog.Result;
 
@@ -137,7 +137,7 @@
         }
     }
 
-    // --- SİLME FONKSİYONU ---
+   
     private async Task DeleteTurbine(TurbineDto item)
     {
         bool? result = await DialogService.ShowMessageBox(

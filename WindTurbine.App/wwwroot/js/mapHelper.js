@@ -2,7 +2,7 @@
 
 var mapInstance;
 
-// Objede isimleri tam bilmediğimiz property'leri yakalamak için
+
 function findKey(obj, containsList) {
     if (!obj) return null;
     const keys = Object.keys(obj);
@@ -33,7 +33,7 @@ function getText(obj, keysContains, defaultValue) {
 
 window.initMap = (turbines) => {
     try {
-        // Eski haritayı temizle
+        
         if (mapInstance) {
             mapInstance.off();
             mapInstance.remove();
@@ -46,7 +46,7 @@ window.initMap = (turbines) => {
         let centerLat = defaultLat;
         let centerLon = defaultLon;
 
-        // Merkez için ilk türbinden lat/lon bulmaya çalış
+        
         if (turbines && turbines.length > 0) {
             const t0 = turbines[0];
 
@@ -65,10 +65,10 @@ window.initMap = (turbines) => {
             return;
         }
 
-        // Haritayı oluştur
+        
         mapInstance = L.map("map").setView([centerLat, centerLon], 13);
 
-        // OpenStreetMap zemin katmanı
+        
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
             maxZoom: 19,
             attribution: "© OpenStreetMap"
@@ -76,10 +76,10 @@ window.initMap = (turbines) => {
 
         const points = [];
 
-        // Türbin marker'ları
+        
         if (turbines) {
             turbines.forEach(t => {
-                // Her türbin için lat/lon key'lerini dinamik bul
+                
                 const latKey = findKey(t, ["lat", "latitude"]);
                 const lonKey = findKey(t, ["lon", "lng", "longitude"]);
 
@@ -131,7 +131,7 @@ window.initMap = (turbines) => {
             });
         }
 
-        // TÜM TÜRBİNLERİ KADRAJA AL
+        
         if (points.length > 1) {
             const bounds = L.latLngBounds(points);
             mapInstance.fitBounds(bounds, { padding: [50, 50] });

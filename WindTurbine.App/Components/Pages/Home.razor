@@ -127,11 +127,11 @@
 </MudContainer>
 
 @code {
-    private DashboardDto dashboardData = new DashboardDto(); // DTO'yu kullanıyoruz
+    private DashboardDto dashboardData = new DashboardDto(); 
     private List<AlertDto> alerts = new List<AlertDto>();
     private bool yukleniyor = true;
 
-    // Grafik Verileri
+    
     public List<ChartSeries> Series { get; set; } = new List<ChartSeries>();
     public string[] XAxisLabels { get; set; } = { };
     private ChartOptions chartOptions = new ChartOptions() { YAxisLines = true };
@@ -146,13 +146,13 @@
         yukleniyor = true;
         try
         {
-            // 1. Dashboard Verilerini Çek
+          
             var data = await ApiService.GetDashboardAsync();
             if (data != null)
             {
                 dashboardData = data;
 
-                // Grafiği DTO'dan gelen verilerle doldur
+                
                 Series.Clear();
                 Series.Add(new ChartSeries { Name = "Gerçekleşen", Data = dashboardData.GerceklesUretimSerisi.ToArray() });
                 Series.Add(new ChartSeries { Name = "Beklenen", Data = dashboardData.BeklenenUretimSerisi.ToArray() });
@@ -160,7 +160,7 @@
                 XAxisLabels = dashboardData.SaatEtiketleri.ToArray();
             }
 
-            // 2. Son Alarmları Çek
+           
             var alertList = await ApiService.GetAlertsAsync();
             if (alertList != null)
             {
@@ -177,7 +177,7 @@
         }
     }
 
-    // Yardımcı Fonksiyonlar
+    
     private Color GetSeverityColor(int severity)
     {
         if (severity >= 3) return Color.Error;

@@ -161,7 +161,7 @@
         }
     }
 
-    // --- EXCEL İNDİRME FONKSİYONU ---
+  
     private async Task ExcelIndir()
     {
         try
@@ -170,7 +170,7 @@
             {
                 var worksheet = workbook.Worksheets.Add("Alarmlar");
 
-                // Başlıklar
+               
                 worksheet.Cell(1, 1).Value = "ID";
                 worksheet.Cell(1, 2).Value = "Zaman";
                 worksheet.Cell(1, 3).Value = "Mesaj";
@@ -178,7 +178,7 @@
                 worksheet.Cell(1, 5).Value = "Durum";
                 worksheet.Cell(1, 6).Value = "Güven Skoru";
 
-                // Veriler
+               
                 for (int i = 0; i < alerts.Count; i++)
                 {
                     var alert = alerts[i];
@@ -190,13 +190,13 @@
                     worksheet.Cell(i + 2, 6).Value = alert.Confidence;
                 }
 
-                // Dosyayı MemoryStream'e kaydet
+              
                 using (var stream = new MemoryStream())
                 {
                     workbook.SaveAs(stream);
                     var content = stream.ToArray();
 
-                    // JS ile indir
+                    
                     using var streamRef = new DotNetStreamReference(stream: new MemoryStream(content));
                     await JS.InvokeVoidAsync("downloadFileFromStream", "Alarmlar_Raporu.xlsx", streamRef);
                 }
@@ -209,29 +209,21 @@
         }
     }
 
-    // --- SİLME FONKSİYONU ---
+   
     private async Task AlarmSil(AlertDto item)
     {
-        // Buraya bir onay kutusu (Dialog) eklenebilir
-        // Şimdilik direkt siliyoruz (API'de Delete metodu varsa)
-        // Eğer API'de DeleteAlert yoksa, hata verecektir.
-        // (Turbine silme örneğindeki gibi DeleteAlertAsync yazmanız gerekebilir)
-
-        // Örnek: await ApiService.DeleteAlertAsync(item.AlertId);
-
-        // Şimdilik sadece listeden silelim (Demo)
+       
         alerts.Remove(item);
         Snackbar.Add("Alarm silindi (Demo)", Severity.Info);
     }
 
-    // --- ÇÖZÜLDÜ İŞARETLEME FONKSİYONU ---
+    
     private async Task AlarmCozuldu(AlertDto item)
     {
-        // Durumu güncelle
+       
         item.Status = "Çözüldü";
 
-        // API'ye gönder (Update metodu varsa)
-        // await ApiService.UpdateAlertAsync(item);
+        
 
         Snackbar.Add("Alarm çözüldü olarak işaretlendi!", Severity.Success);
     }

@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using WindTurbine.DataAccess.Context;
 using WindTurbine.Entities;
-using WindTurbine.DTOs.Reports; // DTO namespace'ini eklemeyi unutmayın
+using WindTurbine.DTOs.Reports; 
 using System;
 using System.Linq;
 
@@ -46,17 +46,15 @@ namespace WindTurbineDb.Controllers
                 FileType = dto.FileType,
                 FileSize = dto.FileSize,
 
-                // --- HATAYI ÇÖZEN SATIR BURASI ---
-                // Veritabanı bu alanın NULL olmasına izin vermediği için
-                // boş bir byte dizisi (byte array) atıyoruz.
+             
                 Content = new byte[0]
-                // --------------------------------
+              
             };
 
             _context.GeneratedReports.Add(report);
             _context.SaveChanges();
 
-            // Oluşan ID'yi geri dönmek iyi bir pratiktir
+           
             dto.ReportId = report.Id;
             return Ok(dto);
         }
