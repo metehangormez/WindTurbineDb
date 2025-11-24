@@ -1,198 +1,237 @@
 ﻿@page "/stats-overview"
+@using WindTurbine.App.Services
+@using WindTurbine.DTOs.Dashboard
+@using WindTurbine.DTOs.Alerts
+@using WindTurbine.DTOs.Weather
+@using WindTurbine.DTOs.Turbines
+@using WindTurbine.DTOs.Reports
 @using MudBlazor
 
-<PageTitle>İstatistikler</PageTitle>
+@inject IApiService ApiService
+@inject NavigationManager NavManager
+
+<PageTitle>İstatistik Özeti</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.False" Class="pt-6 pb-8">
 
-    <!-- Başlık -->
-    <MudText Typo="Typo.h4" Class="mb-6" Style="font-weight:800;">
-        İstatistikler
+    <MudText Typo="Typo.h4" Class="mb-6" Style="font-weight:800; color:#0d47a1;">
+        Genel İstatistikler
     </MudText>
 
-    <!-- ÜST SATIR 4 KART -->
-    <MudGrid Class="mb-4">
-
-        <!-- Riskli Uyarılar -->
-        <MudItem xs="12" md="3">
-            <MudPaper Class="istat-card istat-red">
-                <MudText Typo="Typo.subtitle1" Class="mb-2 istat-title">Riskli Uyarılar</MudText>
-                <MudText Typo="Typo.h5" Class="mb-3 istat-value">28</MudText>
-
-                <MudButton Variant="Variant.Filled"
-                           DisableElevation="true"
-                           Class="istat-button">
-                    Uyarıları Gör
-                </MudButton>
-            </MudPaper>
-        </MudItem>
-
-        <!-- Öneriler -->
-        <MudItem xs="12" md="3">
-            <MudPaper Class="istat-card istat-green">
-                <MudText Typo="Typo.subtitle1" Class="mb-2 istat-title">Öneriler</MudText>
-                <MudText Typo="Typo.h5" Class="mb-3 istat-value">89</MudText>
-
-                <MudButton Variant="Variant.Filled"
-                           DisableElevation="true"
-                           Class="istat-button">
-                    Önerileri İncele
-                </MudButton>
-            </MudPaper>
-        </MudItem>
-
-        <!-- Emreamadelik -->
-        <MudItem xs="12" md="3">
-            <MudPaper Class="istat-card istat-dark">
-                <MudText Typo="Typo.subtitle1" Class="mb-2 istat-title">Emreamadelik</MudText>
-                <MudText Typo="Typo.h5" Class="mb-3 istat-value">89/98</MudText>
-
-                <MudButton Variant="Variant.Filled"
-                           DisableElevation="true"
-                           Class="istat-button"
-                           OnClick="@(() => NavToAvailability())">
-                    Detayları İncele
-                </MudButton>
-            </MudPaper>
-        </MudItem>
-
-        <!-- Gün Beklentisi -->
-        <MudItem xs="12" md="3">
-            <MudPaper Class="istat-card istat-dark">
-                <MudText Typo="Typo.subtitle1" Class="mb-2 istat-title">Gün Beklentisi</MudText>
-                <MudText Typo="Typo.h6" Class="mb-3 istat-value">28/80 Mw</MudText>
-
-                <MudButton Variant="Variant.Filled"
-                           DisableElevation="true"
-                           Class="istat-button">
-                    Detayları İncele
-                </MudButton>
-            </MudPaper>
-        </MudItem>
-
-    </MudGrid>
-
-    <!-- ALT SATIR 4 KART -->
-    <MudGrid Class="mb-4">
-
-        <!-- Rüzgar Santrali -->
-        <MudItem xs="12" md="3">
-            <MudPaper Class="istat-card istat-dark">
-                <MudText Typo="Typo.subtitle1" Class="mb-2 istat-title">Rüzgar Santrali</MudText>
-                <MudText Typo="Typo.h6" Class="mb-3 istat-value">%75</MudText>
-
-                <MudButton Variant="Variant.Filled"
-                           DisableElevation="true"
-                           Class="istat-button">
-                    Detayları İncele
-                </MudButton>
-            </MudPaper>
-        </MudItem>
-
-        <!-- Önlenen Kayıp -->
-        <MudItem xs="12" md="3">
-            <MudPaper Class="istat-card istat-dark">
-                <MudText Typo="Typo.subtitle1" Class="mb-2 istat-title">Önlenen Kayıp</MudText>
-                <MudText Typo="Typo.h6" Class="mb-3 istat-value">210 Mw</MudText>
-
-                <MudButton Variant="Variant.Filled"
-                           DisableElevation="true"
-                           Class="istat-button">
-                    Detayları İncele
-                </MudButton>
-            </MudPaper>
-        </MudItem>
-
-        <!-- Meteorolojik Bilgiler -->
-        <MudItem xs="12" md="3">
-            <MudPaper Class="istat-card istat-dark">
-                <MudText Typo="Typo.subtitle1" Class="mb-2 istat-title">Meteorolojik Bilgiler</MudText>
-                <MudText Typo="Typo.h6" Class="mb-3 istat-value">Fırtına</MudText>
-
-                <MudButton Variant="Variant.Filled"
-                           DisableElevation="true"
-                           Class="istat-button">
-                    Detayları İncele
-                </MudButton>
-            </MudPaper>
-        </MudItem>
-
-        <!-- Aylık Rapor -->
-        <MudItem xs="12" md="3">
-            <MudPaper Class="istat-card istat-dark">
-                <MudText Typo="Typo.subtitle1" Class="mb-2 istat-title">Aylık Rapor</MudText>
-                <MudText Typo="Typo.h6" Class="mb-3 istat-value">Hazırlanıyor</MudText>
-
-                <MudButton Variant="Variant.Filled"
-                           DisableElevation="true"
-                           Class="istat-button">
-                    Detayları İncele
-                </MudButton>
-            </MudPaper>
-        </MudItem>
-
-    </MudGrid>
-
-    <!-- Alt uyarı barları -->
-    <div class="d-flex mt-4" style="gap:16px;">
-        <MudPaper Class="pa-2 px-4 rounded-pill"
-                  Style="background:#ff5252; color:white; font-weight:600;">
-            T01 : CCU Sıcaklığı
-        </MudPaper>
-
-        <MudPaper Class="pa-2 px-4 rounded-pill"
-                  Style="background:white; color:#020826; font-weight:500;">
-            T01 son 1 hafta içinde 3 defa 80 derece üstüne çıktı muhtemel baca fanı arızası !
-        </MudPaper>
-    </div>
-
-</MudContainer>
-
-@code {
-    [Inject] private NavigationManager NavManager { get; set; } = default!;
-
-    private void NavToAvailability()
+    @if (_loading)
     {
-        // Detay sayfan: @page "/statistics"
-        NavManager.NavigateTo("/statistics");
+            <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-4" />
+            <MudText Align="Align.Center">Veriler güncelleniyor...</MudText>
     }
-}
+    else
+    {
+            <MudGrid Class="mb-4">
+
+                <MudItem xs="12" md="3">
+                    <MudPaper Class="istat-card istat-red">
+                        <MudText Typo="Typo.subtitle1" Class="mb-2 istat-title">Riskli Uyarılar</MudText>
+                        <MudText Typo="Typo.h5" Class="mb-3 istat-value">@_riskliUyariSayisi</MudText>
+                        <MudButton Variant="Variant.Filled" OnClick="@(() => NavManager.NavigateTo("/alerts"))" Class="istat-button">
+                            Uyarıları Gör
+                        </MudButton>
+                    </MudPaper>
+                </MudItem>
+
+                <MudItem xs="12" md="3">
+                    <MudPaper Class="istat-card istat-green">
+                        <MudText Typo="Typo.subtitle1" Class="mb-2 istat-title">Aktif Öneriler</MudText>
+                        <MudText Typo="Typo.h5" Class="mb-3 istat-value">@_oneriSayisi</MudText>
+                        <MudButton Variant="Variant.Filled" OnClick="@(() => NavManager.NavigateTo("/analytics"))" Class="istat-button">
+                            Önerileri İncele
+                        </MudButton>
+                    </MudPaper>
+                </MudItem>
+
+                <MudItem xs="12" md="3">
+                    <MudPaper Class="istat-card istat-dark">
+                        <MudText Typo="Typo.subtitle1" Class="mb-2 istat-title">Emreamadelik</MudText>
+                        <MudText Typo="Typo.h5" Class="mb-3 istat-value">% @_emreamadelik.ToString("F1")</MudText>
+                        <MudButton Variant="Variant.Filled" OnClick="@(() => NavManager.NavigateTo("/statistics"))" Class="istat-button">
+                            Detayları İncele
+                        </MudButton>
+                    </MudPaper>
+                </MudItem>
+
+                <MudItem xs="12" md="3">
+                    <MudPaper Class="istat-card istat-dark">
+                        <MudText Typo="Typo.subtitle1" Class="mb-2 istat-title">Gün Beklentisi</MudText>
+                        <MudText Typo="Typo.h6" Class="mb-3 istat-value">@_gercekles.ToString("F0") / @_beklenen.ToString("F0") MW</MudText>
+                        <MudButton Variant="Variant.Filled" OnClick="@(() => NavManager.NavigateTo("/statistics"))" Class="istat-button">
+                            Detayları İncele
+                        </MudButton>
+                    </MudPaper>
+                </MudItem>
+            </MudGrid>
+
+            <MudGrid Class="mb-4">
+
+                <MudItem xs="12" md="3">
+                    <MudPaper Class="istat-card istat-dark">
+                        <MudText Typo="Typo.subtitle1" Class="mb-2 istat-title">Rüzgar Santralleri</MudText>
+                        <MudText Typo="Typo.h6" Class="mb-3 istat-value">@_aktifTurbin / @_toplamTurbin Aktif</MudText>
+                        <MudButton Variant="Variant.Filled" OnClick="@(() => NavManager.NavigateTo("/turbines"))" Class="istat-button">
+                            Santralleri Gör
+                        </MudButton>
+                    </MudPaper>
+                </MudItem>
+
+                <MudItem xs="12" md="3">
+                    <MudPaper Class="istat-card istat-dark">
+                        <MudText Typo="Typo.subtitle1" Class="mb-2 istat-title">Hesaplanan Kayıp</MudText>
+                        <MudText Typo="Typo.h6" Class="mb-3 istat-value">@_kayip.ToString("F1") MW</MudText>
+                        <MudButton Variant="Variant.Filled" OnClick="@(() => NavManager.NavigateTo("/statistics"))" Class="istat-button">
+                            Detayları İncele
+                        </MudButton>
+                    </MudPaper>
+                </MudItem>
+
+                <MudItem xs="12" md="3">
+                    <MudPaper Class="istat-card istat-dark">
+                        <MudText Typo="Typo.subtitle1" Class="mb-2 istat-title">Hava Durumu</MudText>
+                        <MudText Typo="Typo.h6" Class="mb-3 istat-value">@_havaDurumuOzet</MudText>
+                        <MudButton Variant="Variant.Filled" OnClick="@(() => NavManager.NavigateTo("/weather"))" Class="istat-button">
+                            Meteorolojiyi Aç
+                        </MudButton>
+                    </MudPaper>
+                </MudItem>
+
+                <MudItem xs="12" md="3">
+                    <MudPaper Class="istat-card istat-dark">
+                        <MudText Typo="Typo.subtitle1" Class="mb-2 istat-title">Son Rapor</MudText>
+                        <MudText Typo="Typo.h6" Class="mb-3 istat-value">@_sonRaporDurumu</MudText>
+                        <MudButton Variant="Variant.Filled" OnClick="@(() => NavManager.NavigateTo("/reports"))" Class="istat-button">
+                            Raporlara Git
+                        </MudButton>
+                    </MudPaper>
+                </MudItem>
+
+            </MudGrid>
+    }
+</MudContainer>
 
 <style>
     .istat-card {
         border-radius: 20px;
         padding: 18px 22px;
         color: #ffffff;
-        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.25);
+        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.15);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
     }
 
-    .istat-red {
-        background-color: #c62828;
-    }
-
-    .istat-green {
-        background-color: #00c853;
-    }
-
-    .istat-dark {
-        background-color: #020826;
-    }
+    .istat-red { background: linear-gradient(135deg, #e53935 0%, #b71c1c 100%); }
+    .istat-green { background: linear-gradient(135deg, #43a047 0%, #1b5e20 100%); }
+    .istat-dark { background: linear-gradient(135deg, #1a237e 0%, #0d47a1 100%); }
 
     .istat-button {
         border-radius: 999px;
-        padding-left: 20px;
-        padding-right: 20px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        background-color: #ffffff;
-        color: inherit;
-    }
-
-    .istat-title {
-        font-weight: 600;
-    }
-
-    .istat-value {
+        padding: 6px 20px;
+        font-size: 0.75rem;
         font-weight: 700;
+        background-color: rgba(255,255,255,0.9);
+        color: #333;
+        align-self: flex-start;
+        text-transform: none;
+        margin-top: 10px;
     }
+
+    .istat-title { font-weight: 600; opacity: 0.9; font-size: 0.9rem; }
+    .istat-value { font-weight: 800; font-size: 1.5rem; }
 </style>
+
+@code {
+    private bool _loading = true;
+
+    // Gösterilecek Veriler
+    private int _riskliUyariSayisi = 0;
+    private int _oneriSayisi = 0;
+    private double _emreamadelik = 0;
+    private double _beklenen = 0;
+    private double _gercekles = 0;
+    private double _kayip = 0;
+    private int _toplamTurbin = 0;
+    private int _aktifTurbin = 0;
+    private string _havaDurumuOzet = "Bilinmiyor";
+    private string _sonRaporDurumu = "Hazır";
+
+    protected override async Task OnInitializedAsync()
+    {
+        _loading = true;
+        try
+        {
+            // --- 1. Dashboard Verileri ---
+            var dashboardData = await ApiService.GetDashboardAsync();
+            if (dashboardData != null)
+            {
+                // DTO'daki hazır özellikler kullanıldı
+                _riskliUyariSayisi = dashboardData.RiskliUyariSayisi;
+                _oneriSayisi = dashboardData.ToplamOneriSayisi;
+
+                // Emreamadelik için VerimlilikYuzdesi kullanıldı
+                _emreamadelik = dashboardData.VerimlilikYuzdesi;
+
+                // Türbin sayıları DTO'dan
+                _toplamTurbin = dashboardData.ToplamTurbinSayisi;
+                _aktifTurbin = dashboardData.AktifTurbinSayisi;
+
+                _gercekles = dashboardData.ToplamUretimMW;
+
+                // Liste null kontrolü yaparak toplamı al
+                if (dashboardData.BeklenenUretimSerisi != null)
+                    _beklenen = dashboardData.BeklenenUretimSerisi.Sum();
+
+                // Kayıp Hesabı: (Beklenen - Gerçekleşen)
+                if (dashboardData.BeklenenUretimSerisi != null && dashboardData.GerceklesUretimSerisi != null)
+                {
+                    var count = Math.Min(dashboardData.BeklenenUretimSerisi.Count, dashboardData.GerceklesUretimSerisi.Count);
+                    for (int i = 0; i < count; i++)
+                    {
+                        var fark = dashboardData.BeklenenUretimSerisi[i] - dashboardData.GerceklesUretimSerisi[i];
+                        if (fark > 0) _kayip += fark;
+                    }
+                }
+            }
+
+            // --- 2. Hava Durumu ---
+            var weather = await ApiService.GetWeatherForecastAsync();
+            if (weather != null && weather.Any())
+            {
+                var today = weather.FirstOrDefault();
+                if (today != null)
+                {
+                    _havaDurumuOzet = $"{today.Temperature}°C {today.Condition}";
+                }
+            }
+
+            // --- 3. Rapor Durumu ---
+            var reports = await ApiService.GetReportsAsync();
+            if (reports != null && reports.Any())
+            {
+                var lastReport = reports.OrderByDescending(r => r.GeneratedDate).FirstOrDefault();
+                if (lastReport != null && lastReport.GeneratedDate.Date == DateTime.Today)
+                {
+                    _sonRaporDurumu = "Güncel";
+                }
+                else
+                {
+                    _sonRaporDurumu = "Bekleniyor";
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Stats yükleme hatası: " + ex.Message);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+}
