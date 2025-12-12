@@ -1,0 +1,216 @@
+﻿@page "/solarinverters"
+@using WindTurbine.App.Services
+@using WindTurbine.DTOs.Solar
+@using MudBlazor
+@using System.Linq
+@inject IApiService ApiService
+@inject NavigationManager NavManager
+@inject IDialogService DialogService
+
+<PageTitle>Güneş Sahası - İnvertörler</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-6 mb-6">
+
+    <MudGrid Class="mb-6">
+        <MudItem xs="12" sm="4">
+            <MudPaper Elevation="0" Class="pa-4 rounded-lg border-solid border-1 mud-border-lines-default d-flex align-center justify-space-between" Style="border-left: 6px solid #ff6f00; background: white;">
+                <div>
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">AKTİF İNVERTÖR</MudText>
+                    <MudText Typo="Typo.h4" Style="font-weight: 700; color: #ff6f00;">@aktifSayisi</MudText>
+                </div>
+                <MudAvatar Color="Color.Warning" Variant="Variant.Filled" Size="Size.Large" Rounded="true">
+                    <MudIcon Icon="@Icons.Material.Filled.WbSunny" />
+                </MudAvatar>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" sm="4">
+            <MudPaper Elevation="0" Class="pa-4 rounded-lg border-solid border-1 mud-border-lines-default d-flex align-center justify-space-between" Style="border-left: 6px solid #d32f2f; background: white;">
+                <div>
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">ARIZALI / PASİF</MudText>
+                    <MudText Typo="Typo.h4" Style="font-weight: 700; color: #d32f2f;">@arizaliSayisi</MudText>
+                </div>
+                <MudAvatar Color="Color.Error" Variant="Variant.Filled" Size="Size.Large" Rounded="true">
+                    <MudIcon Icon="@Icons.Material.Filled.ErrorOutline" />
+                </MudAvatar>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" sm="4">
+            <MudPaper Elevation="0" Class="pa-4 rounded-lg border-solid border-1 mud-border-lines-default d-flex align-center justify-space-between" Style="border-left: 6px solid #fbc02d; background: white;">
+                <div>
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">DÜŞÜK VERİM (AI UYARISI)</MudText>
+                    <MudText Typo="Typo.h4" Style="font-weight: 700; color: #fbc02d;">@dusukVerimSayisi</MudText>
+                </div>
+                <MudAvatar Color="Color.Surface" Variant="Variant.Filled" Size="Size.Large" Rounded="true">
+                    <MudIcon Icon="@Icons.Material.Filled.AutoAwesome" Color="Color.Warning" />
+                </MudAvatar>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div style="width: 300px;">
+            <MudTextField @bind-Value="searchString"
+                          Placeholder="İnvertör Ara..."
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Class="mt-0"
+                          Style="background-color: white;" />
+        </div>
+        <div class="d-flex gap-2">
+            <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.AutoFixHigh" Color="Color.Info">AI Optimizasyonu Başlat</MudButton>
+            <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" Color="Color.Secondary">Yeni Ekle</MudButton>
+        </div>
+    </div>
+
+    @if (loading)
+    {
+        <MudProgressLinear Color="Color.Warning" Indeterminate="true" Class="my-4" />
+        <MudText Align="Align.Center">Saha verileri taranıyor...</MudText>
+    }
+    else if (inverters != null)
+    {
+        <MudGrid>
+            @foreach (var inv in FilteredInverters)
+            {
+                <MudItem xs="12" sm="6" md="4" lg="3">
+                    <MudPaper Elevation="3"
+                              Class="pa-4 rounded-xl cursor-pointer hover-effect d-flex flex-column relative overflow-hidden"
+                              Style="@($"height: 240px; background: {GetColor(inv.Status)}; color: white;")">
+
+                        <MudIcon Icon="@Icons.Material.Filled.SolarPower"
+                                 Style="position: absolute; right: -20px; bottom: -20px; font-size: 10rem; opacity: 0.15; color: white;" />
+
+                        <div class="d-flex justify-space-between align-start z-10">
+                            <div>
+                                <MudText Typo="Typo.h6" Style="font-weight: 800;">@inv.Name</MudText>
+                                <MudText Typo="Typo.caption" Style="opacity: 0.9;">Huawei SUN2000</MudText>
+                            </div>
+
+                            @if (inv.Status == "Düşük Verim")
+                            {
+                                <MudChip T="string" Color="Color.Surface" Size="Size.Small" Icon="@Icons.Material.Filled.CleaningServices" Style="color: #f57f17; font-weight:bold;">AI: TOZLANMA</MudChip>
+                            }
+                            else if (inv.Status == "Arızalı")
+                            {
+                                <MudChip T="string" Color="Color.Surface" Size="Size.Small" Icon="@Icons.Material.Filled.Error" Style="color: #c62828; font-weight:bold;">AI: ARIZA</MudChip>
+                            }
+                            else
+                            {
+                                <MudChip T="string" Color="Color.Surface" Size="Size.Small" Icon="@Icons.Material.Filled.CheckCircle" Style="color: #2e7d32; font-weight:bold;">AI: OPTİMUM</MudChip>
+                            }
+                        </div>
+
+                        <MudSpacer />
+
+                        <div class="z-10 my-2">
+                            <MudText Typo="Typo.caption" Style="opacity: 0.9; font-style: italic;">
+                                <MudIcon Icon="@Icons.Material.Filled.AutoAwesome" Size="Size.Small" Class="mr-1" style="font-size: 12px;" />
+                                @GetAiMessage(inv.Status, inv.Efficiency)
+                            </MudText>
+                        </div>
+
+                        <div class="d-flex justify-space-between align-end z-10 mt-2">
+                            <div class="d-flex flex-column">
+                                <MudText Typo="Typo.caption" Style="opacity: 0.8;">AC GÜÇ</MudText>
+                                <div class="d-flex align-center">
+                                    <MudIcon Icon="@Icons.Material.Filled.Bolt" Size="Size.Small" Class="mr-1" />
+                                    <MudText Typo="Typo.h6"><b>@inv.CurrentPower.ToString("F0")</b> kW</MudText>
+                                </div>
+                            </div>
+
+                            <div class="d-flex flex-column align-end">
+                                <MudText Typo="Typo.caption" Style="opacity: 0.8;">VERİMLİLİK</MudText>
+                                <div class="d-flex align-center">
+                                    <MudText Typo="Typo.h6"><b>%@inv.Efficiency.ToString("F1")</b></MudText>
+                                    <MudIcon Icon="@Icons.Material.Filled.DataSaverOn" Size="Size.Small" Class="ml-1" />
+                                </div>
+                            </div>
+                        </div>
+                    </MudPaper>
+                </MudItem>
+            }
+        </MudGrid>
+    }
+
+</MudContainer>
+
+<style>
+    .hover-effect {
+        transition: transform 0.2s;
+    }
+
+        .hover-effect:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+    .z-10 {
+        z-index: 10;
+    }
+</style>
+
+@code {
+    private List<InverterDto> inverters = new List<InverterDto>();
+    private bool loading = true;
+    private string searchString = "";
+
+    // Sayaçlar
+    private int aktifSayisi = 0;
+    private int arizaliSayisi = 0;
+    private int dusukVerimSayisi = 0;
+
+    private IEnumerable<InverterDto> FilteredInverters =>
+        string.IsNullOrWhiteSpace(searchString)
+        ? inverters
+        : inverters.Where(t => t.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase));
+
+    protected override async Task OnInitializedAsync()
+    {
+        var timer = new System.Timers.Timer(3000);
+        timer.Elapsed += async (sender, e) => await InvokeAsync(VerileriYukle);
+        timer.Start();
+        await VerileriYukle();
+    }
+
+    private async Task VerileriYukle()
+    {
+        if (inverters.Count == 0) loading = true;
+        try
+        {
+            var data = await ApiService.GetSolarDataAsync(); // Mevcut metodu kullanıyoruz
+            if (data != null)
+            {
+                inverters = data.Inverters;
+
+                aktifSayisi = inverters.Count(x => x.Status == "Normal");
+                arizaliSayisi = inverters.Count(x => x.Status == "Arızalı");
+                dusukVerimSayisi = inverters.Count(x => x.Status == "Düşük Verim");
+
+                StateHasChanged();
+            }
+        }
+        catch { }
+        finally { loading = false; }
+    }
+
+    // --- AI MESAJ ÜRETİCİ ---
+    private string GetAiMessage(string status, double eff)
+    {
+        if (status == "Arızalı") return "Kritik Hata: DC sigorta atması muhtemel.";
+        if (status == "Düşük Verim") return $"Beklenen verim %98 iken %{eff:F0} ölçüldü. Temizlik önerilir.";
+        return "Sistem performansı ideal eğride seyrediyor.";
+    }
+
+    private string GetColor(string status)
+    {
+        // GÜNEŞ RENKLERİ
+        if (status == "Normal") return "linear-gradient(135deg, #ff8f00 0%, #ffc107 100%)"; // Canlı Turuncu/Amber
+        if (status == "Arızalı") return "linear-gradient(135deg, #c62828 0%, #ef5350 100%)"; // Kırmızı
+        if (status == "Düşük Verim") return "linear-gradient(135deg, #f9a825 0%, #fbc02d 100%)"; // Koyu Sarı
+        return "gray";
+    }
+}

@@ -2,6 +2,7 @@
 using WindTurbine.DTOs.Alerts;
 using WindTurbine.DTOs.Dashboard;
 using WindTurbine.DTOs.Reports;
+using WindTurbine.DTOs.Solar;
 using WindTurbine.DTOs.Turbine;
 using WindTurbine.DTOs.Turbines;
 using WindTurbine.DTOs.Weather; 
@@ -10,6 +11,44 @@ namespace WindTurbine.App.Services
 {
     public class ApiService : IApiService
     {
+        public async Task<SolarFarmDto> GetSolarDataAsync()
+        {
+            // API yerine sahte veri üretiyoruz
+            await Task.Delay(50); // Çok kısa bekleme
+
+            var rnd = new Random();
+            var dto = new SolarFarmDto
+            {
+                AnlikUretimkW = 4500 + rnd.Next(-200, 200),
+                GunlukUretimMWh = 32.5,
+                Isinim = 850 + rnd.Next(-50, 50),
+                PanelSicakligi = 45 + rnd.Next(-2, 5),
+                PerformanceRatio = 82.5,
+                // Grafik için rastgele veri dizisi
+                UretimGrafigi = new double[] { 0, 0, 0, 0, 10, 80, 250, 600, 1200, 2500, 3800, 4200, 4500, 4300, 3500, 2200, 900, 200, 50, 0, 0, 0, 0, 0 }
+            };
+
+            // İnvertörleri doldur
+            dto.Inverters = new List<InverterDto>();
+            for (int i = 1; i <= 12; i++)
+            {
+                string status = "Normal";
+                double eff = 98.5;
+                if (i == 4) { status = "Arızalı"; eff = 0; }
+                else if (i == 7) { status = "Düşük Verim"; eff = 85.0; }
+
+                dto.Inverters.Add(new InverterDto
+                {
+                    Id = i,
+                    Name = $"INV-{i:00}",
+                    CurrentPower = status == "Arızalı" ? 0 : (375 + rnd.Next(-10, 10)),
+                    Efficiency = eff,
+                    Status = status
+                });
+            }
+
+            return dto;
+        }
         public async Task<AvailabilityDto> GetAvailabilityAsync()
         {
            

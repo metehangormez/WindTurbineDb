@@ -1,0 +1,121 @@
+﻿@page "/solar"
+@using WindTurbine.App.Services
+@using WindTurbine.DTOs.Solar
+@using MudBlazor
+@using System.Linq
+@inject IApiService ApiService
+
+<PageTitle>Güneş Santrali (GES)</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-6 mb-6">
+
+    <div class="d-flex justify-space-between align-center mb-6">
+        <div>
+            <MudText Typo="Typo.h4" Style="font-weight: 800; color: #e65100;">Güneş Enerji Santrali</MudText>
+            <MudText Typo="Typo.body2" Class="mud-text-secondary">Manisa GES - Saha 1 İzleme Paneli</MudText>
+        </div>
+        <MudChip T="string" Icon="@Icons.Material.Filled.CalendarToday" Variant="Variant.Outlined" Color="Color.Warning">@DateTime.Now.ToString("dd MMM yyyy")</MudChip>
+    </div>
+
+    @if (loading)
+    {
+        <MudProgressLinear Color="Color.Warning" Indeterminate="true" Class="my-4" />
+        <MudText Align="Align.Center">GES verileri analiz ediliyor...</MudText>
+    }
+    else if (solarData != null)
+    {
+        <MudGrid Class="mb-6">
+            <MudItem xs="12" sm="6" md="3">
+                <MudPaper Class="pa-4 rounded-xl d-flex flex-column justify-space-between" Style="height: 160px; background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%); color: white;">
+                    <MudText Typo="Typo.subtitle2">ANLIK IŞINIM</MudText>
+                    <div><MudText Typo="Typo.h3"><b>@solarData.Isinim</b></MudText><MudText>W/m²</MudText></div>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudPaper Class="pa-4 rounded-xl d-flex flex-column justify-space-between" Style="height: 160px; background: linear-gradient(135deg, #ffb74d 0%, #ffa726 100%); color: white;">
+                    <MudText Typo="Typo.subtitle2">GÜÇ ÇIKIŞI</MudText>
+                    <div><MudText Typo="Typo.h3"><b>@(solarData.AnlikUretimkW / 1000.0)</b></MudText><MudText>MW</MudText></div>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudPaper Class="pa-4 rounded-xl d-flex flex-column justify-space-between" Style="height: 160px; border: 1px solid #eee;">
+                    <MudText Typo="Typo.subtitle2" Class="mud-text-secondary">PANEL SICAKLIĞI</MudText>
+                    <div class="d-flex align-center"><MudIcon Icon="@Icons.Material.Filled.DeviceThermostat" Color="Color.Error" /><MudText Typo="Typo.h3" Class="ml-2">@solarData.PanelSicakligi.ToString("0.0")</MudText><MudText Class="mt-2">°C</MudText></div>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudPaper Class="pa-4 rounded-xl d-flex flex-column justify-space-between" Style="height: 160px; background: #263238; color: white;">
+                    <MudText Typo="Typo.subtitle2" Style="color:#90a4ae;">PR (VERİM)</MudText>
+                    <div class="d-flex justify-center"><MudText Typo="Typo.h3" Color="Color.Success"><b>%@solarData.PerformanceRatio</b></MudText></div>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+
+        <MudGrid>
+            <MudItem xs="12" md="8">
+                <MudPaper Class="pa-6 rounded-xl border-solid border-1 mud-border-lines-default">
+                    <MudText Typo="Typo.h6" Class="mb-4"><b>Günlük Üretim Eğrisi</b></MudText>
+                    <MudChart ChartType="ChartType.Line" ChartSeries="@Series" XAxisLabels="@XAxisLabels" Width="100%" Height="300px" ChartOptions="@chartOptions" />
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudPaper Class="pa-0 rounded-xl border-solid border-1 mud-border-lines-default" Style="height: 100%; overflow: hidden;">
+                    <div class="pa-4" style="background-color: #fafafa;"><MudText Typo="Typo.h6"><b>İnvertörler</b></MudText></div>
+                    <div style="height: 320px; overflow-y: auto;">
+                        <MudList T="string" Dense="true">
+                            @foreach (var inv in solarData.Inverters)
+                            {
+                                <MudListItem>
+                                    <div class="d-flex justify-space-between">
+                                        <MudText><b>@inv.Name</b> (@inv.Efficiency%)</MudText>
+                                        <MudText Color="@(inv.Status=="Normal"?Color.Success:Color.Error)">@inv.CurrentPower kW</MudText>
+                                    </div>
+                                </MudListItem>
+                                <MudDivider />
+                            }
+                        </MudList>
+                    </div>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    }
+    else
+    {
+        <MudAlert Severity="Severity.Error">Veri yüklenemedi. ApiService bağlantısını kontrol edin.</MudAlert>
+    }
+
+</MudContainer>
+
+@code {
+    private SolarFarmDto solarData;
+    private bool loading = true;
+    public List<ChartSeries> Series = new List<ChartSeries>();
+    public string[] XAxisLabels = new string[] { "00", "02", "04", "06", "08", "10", "12", "14", "16", "18", "20", "22" };
+    private ChartOptions chartOptions = new ChartOptions() { YAxisLines = true, ChartPalette = new string[] { "#ff9800" } };
+
+    protected override async Task OnInitializedAsync()
+    {
+        loading = true;
+        try
+        {
+            // Simülasyon verisini çek
+            solarData = await ApiService.GetSolarDataAsync();
+
+            if (solarData != null && solarData.UretimGrafigi != null)
+            {
+                // Veriyi güvenli şekilde grafiğe aktar
+                var grafikVerisi = solarData.UretimGrafigi.Where((x, i) => i % 2 == 0).ToArray();
+                Series.Clear();
+                Series.Add(new ChartSeries { Name = "Üretim (kW)", Data = grafikVerisi });
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Hata: " + ex.Message);
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+}

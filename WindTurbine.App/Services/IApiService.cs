@@ -5,11 +5,13 @@ using WindTurbine.DTOs.Auth;
 using WindTurbine.DTOs.Reports;
 using WindTurbine.DTOs.Weather;
 using WindTurbine.DTOs.Turbine;
+using WindTurbine.DTOs.Solar;
 
 namespace WindTurbine.App.Services
 {
     public interface IApiService
     {
+        Task<SolarFarmDto> GetSolarDataAsync();
         Task<AvailabilityDto> GetAvailabilityAsync();
         Task<bool> CreateReportAsync(ReportDto report);
         Task<List<WeatherForecastDto>> GetWeatherForecastAsync();
